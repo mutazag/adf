@@ -9,12 +9,16 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "var1",
+
+
 					"value": "1"
 				}
 			}
 		],
 		"variables": {
+
 			"var1": {
+
 				"type": "String"
 			}
 		},
