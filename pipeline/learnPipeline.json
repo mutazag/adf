@@ -1,6 +1,64 @@
 {
 	"name": "learnPipeline",
 	"properties": {
+		"activities": [
+			{
+				"name": "Initialise Variable",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "var1",
+					"value": "1"
+				}
+			},
+			{
+				"name": "Initialise task list",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "taskList",
+					"value": [
+						"['task1','task2']"
+					]
+				}
+			},
+			{
+				"name": "For Each Task",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Initialise task list",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Initialise Variable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('taskList')",
+						"type": "Expression"
+					},
+					"isSequential": true
+				}
+			}
+		],
+		"variables": {
+			"var1": {
+				"type": "String"
+			},
+			"taskList": {
+				"type": "Array"
+			}
+		},
 		"annotations": []
 	}
 }
