@@ -6,10 +6,6 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "magdatafactoryadfutils"
-		},
-		"storagegen2_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://storagedatafactorydev01.dfs.core.windows.net"
 		}
 	},
 	"variables": {
@@ -94,8 +90,7 @@
 						"inputs": [
 							{
 								"referenceName": "csv_dataset",
-								"type": "DatasetReference",
-								"parameters": {}
+								"type": "DatasetReference"
 							}
 						],
 						"outputs": [
@@ -133,7 +128,7 @@
 				"annotations": [],
 				"type": "AzureBlobFS",
 				"typeProperties": {
-					"url": "[parameters('storagegen2_properties_typeProperties_url')]"
+					"url": "https://storagedatafactorydev01.dfs.core.windows.net"
 				}
 			},
 			"dependsOn": []

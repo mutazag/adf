@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "magdatafactoryadfutils"
 		},
+		"storagegen2_properties_typeProperties_url": {
+			"value": "https://storagedatafactorydev01.dfs.core.windows.net"
+		},
 		"containerUri": {
 			"value": ""
 		},

@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "magdatafactoryadfutils"
 		},
+		"storagegen2_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://storagedatafactorydev01.dfs.core.windows.net"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -33,6 +37,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"storagegen2_properties_typeProperties_url": {
+						"value": "[parameters('storagegen2_properties_typeProperties_url')]"
 					}
 				}
 			},
