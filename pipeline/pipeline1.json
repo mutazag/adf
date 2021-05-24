@@ -10,8 +10,93 @@
 				"typeProperties": {
 					"waitTimeInSeconds": 1
 				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Wait1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"additionalColumns": [
+							{
+								"name": "filepath",
+								"value": "$$FILEPATH"
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": false,
+							"wildcardFileName": "*.csv",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "csv_dataset",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "csv_dataset_copy1",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": {
+								"value": "@concat(pipeline().parameters.nameprefix,'.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				]
 			}
 		],
+		"parameters": {
+			"nameprefix": {
+				"type": "string",
+				"defaultValue": "test_pipeline"
+			}
+		},
 		"annotations": []
 	}
 }
