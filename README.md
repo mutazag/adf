@@ -4,6 +4,7 @@
 - [2. ADF](#2-adf)
     - [2.1. validate pipeline](#21-validate-pipeline)
     - [2.2. build arm templates](#22-build-arm-templates)
+    - [2.3. Using Custom Paramater and ARM deployment](#23-using-custom-paramater-and-arm-deployment)
 
 <!-- /TOC -->
 
@@ -56,3 +57,8 @@ https://docs.microsoft.com/en-us/azure/data-factory/continuous-integration-deplo
 npm run build export c:\git\adf /subscriptions/<Subscription ID>/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/<ADF Name> "ArmTemplate"
 ```
 
+## 2.3. Using Custom Paramater and ARM deployment
+
+Arm templates custom paramaters usage: https://docs.microsoft.com/en-us/azure/data-factory/continuous-integration-deployment#triggers
+
+Explaination in stackoverflow: https://stackoverflow.com/questions/67666564/adf-pipeline-trigger-deployment-on-devops/67667011#67667011
