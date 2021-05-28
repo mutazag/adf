@@ -31,6 +31,9 @@ steps:
     verbose: true
   displayName: 'Install npm package'
 
+- script: 
+    ls 
+
 
 # Validates all of the Data Factory resources in the repository. You'll get the same validation errors as when "Validate All" is selected.
 # Enter the appropriate subscription and name for the source factory.
