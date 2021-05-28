@@ -47,7 +47,7 @@ steps:
   inputs:
     command: 'custom'
     workingDir: '$(Build.Repository.LocalPath)>' #replace with the package.json folder
-    customCommand: 'run build validate $(Build.Repository.LocalPath) /subscriptions//resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils'
+    customCommand: 'run build validate . /subscriptions//resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils'
   displayName: 'Validate'
 
 # Validate and then generate the ARM template into the destination folder, which is the same as selecting "Publish" from the UX.
@@ -57,14 +57,14 @@ steps:
   inputs:
     command: 'custom'
     workingDir: '$(Build.Repository.LocalPath)' #replace with the package.json folder
-    customCommand: 'run build export $(Build.Repository.LocalPath) /subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils "ArmTemplate"'
+    customCommand: 'run build export . /subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils "ArmTemplate"'
   displayName: 'Validate and Generate ARM template'
 
 # Publish the artifact to be used as a source for a release pipeline.
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Build.Repository.LocalPath)/<folder-of-the-package.json-file>/ArmTemplate' #replace with the package.json folder
+    targetPath: '$(Build.Repository.LocalPath)/ArmTemplate' #replace with the package.json folder
     artifact: 'ArmTemplates'
     publishLocation: 'pipeline'
 
