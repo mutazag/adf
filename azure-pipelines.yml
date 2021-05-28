@@ -22,6 +22,8 @@ steps:
     ls 
     echo $(Build.Repository.LocalPath)
     echo 'run build validate $(Build.Repository.LocalPath) /subscriptions//resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils'
+    pwd 
+    ls $(Build.Repository.LocalPath)
   displayName: 'display cmd line outputs'
 
 - task: NodeTool@0
