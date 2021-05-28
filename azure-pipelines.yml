@@ -33,6 +33,8 @@ steps:
 
 - script: 
     ls 
+    echo $(Build.Repository.LocalPath)
+    echo 'run build validate $(Build.Repository.LocalPath) /subscriptions//resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils'
 
 
 # Validates all of the Data Factory resources in the repository. You'll get the same validation errors as when "Validate All" is selected.
