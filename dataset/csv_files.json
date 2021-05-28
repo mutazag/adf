@@ -1,0 +1,37 @@
+{
+	"name": "csv_files",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storagegen2",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"folderpath": {
+				"type": "string"
+			},
+			"file_exension": {
+				"type": "string",
+				"defaultValue": "*.csv"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().file_exension",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().folderpath",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

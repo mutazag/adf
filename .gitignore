@@ -1,0 +1,4 @@
+ArmTemplate/*
+downloads/*
+node_modules/*
+secretfile.txt

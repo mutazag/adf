@@ -1,0 +1,10 @@
+{
+	"name": "storagegen2",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://storagedatafactorydev01.dfs.core.windows.net"
+		}
+	}
+}
