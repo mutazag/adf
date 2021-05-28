@@ -76,7 +76,7 @@ steps:
 
 
 - script:
-    ls ArmTempalte
+    ls ArmTemplate
   displayName: 'ls ArmTemplate'
 # Publish the artifact to be used as a source for a release pipeline.
 
