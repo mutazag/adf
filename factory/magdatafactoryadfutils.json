@@ -5,6 +5,10 @@
 			"global_param1": {
 				"type": "string",
 				"value": "v2"
+			},
+			"another_param": {
+				"type": "string",
+				"value": "test"
 			}
 		}
 	},
