@@ -9,6 +9,10 @@
 			"another_param": {
 				"type": "string",
 				"value": "test"
+			},
+			"and_another_one": {
+				"type": "string",
+				"value": "test12"
 			}
 		}
 	},
