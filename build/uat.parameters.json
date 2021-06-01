@@ -11,10 +11,9 @@
             ]
         },
         "dataFactory_p1": {
-            "value": {
-                "type": "string",
+
                 "value": "x1"
-            }
+
         }
     }
 }
