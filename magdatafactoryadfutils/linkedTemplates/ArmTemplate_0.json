@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "magdatafactoryadfutils"
 		},
+		"dataFactory_p1": {
+			"type": "string",
+			"defaultValue": "v2"
+		},
 		"OnceAWeekTrigger_weekDays": {
 			"type": "array",
 			"defaultValue": [
@@ -26,7 +30,15 @@
 				"globalParameters": {
 					"global_param1": {
 						"type": "string",
-						"value": "v1"
+						"value": "[parameters('dataFactory_p1')]"
+					},
+					"another_param": {
+						"type": "string",
+						"value": "test"
+					},
+					"and_another_one": {
+						"type": "string",
+						"value": "test12"
 					}
 				}
 			},

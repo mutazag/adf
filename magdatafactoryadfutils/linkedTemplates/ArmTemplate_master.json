@@ -13,6 +13,10 @@
 				"Sunday"
 			]
 		},
+		"dataFactory_p1": {
+			"type": "string",
+			"defaultValue": "v2"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -39,6 +43,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"dataFactory_p1": {
+						"value": "[parameters('dataFactory_p1')]"
 					},
 					"OnceAWeekTrigger_weekDays": {
 						"value": "[parameters('OnceAWeekTrigger_weekDays')]"
