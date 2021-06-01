@@ -1,1 +1,6 @@
-{}
+{
+	"global_param1": {
+		"type": "string",
+		"value": "v1"
+	}
+}
