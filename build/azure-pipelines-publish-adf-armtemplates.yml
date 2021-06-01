@@ -80,8 +80,8 @@ steps:
 
 
 - script:
-    ls ArmTemplate
-  displayName: 'ls ArmTemplate'
+    ls build/ArmTemplate
+  displayName: 'ls build/ArmTemplate'
 
 - script:
     cat build/ArmTemplate/ARMTemplateForFactory.json
