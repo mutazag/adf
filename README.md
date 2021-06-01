@@ -57,6 +57,10 @@ https://docs.microsoft.com/en-us/azure/data-factory/continuous-integration-deplo
 npm run build export c:\git\adf /subscriptions/<Subscription ID>/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/<ADF Name> "ArmTemplate"
 ```
 
+> Using `.` as the path for local folder will produce an ARM template with a blank data factory.
+
+> Must inclose the resource identified in double qoutes \" \" when running the command in bash
+
 ## 2.3. Using Custom Paramater and ARM deployment
 
 Arm templates custom paramaters usage: https://docs.microsoft.com/en-us/azure/data-factory/continuous-integration-deployment#triggers

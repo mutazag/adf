@@ -1,4 +1,4 @@
-ArmTemplate/*
-downloads/*
-node_modules/*
+*/ArmTemplate/*
+*downloads*
+*/node_modules/*
 secretfile.txt

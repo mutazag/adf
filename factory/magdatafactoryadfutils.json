@@ -1,0 +1,12 @@
+{
+	"name": "magdatafactoryadfutils",
+	"properties": {
+		"globalParameters": {
+			"global_param1": {
+				"type": "string",
+				"value": "v2"
+			}
+		}
+	},
+	"location": "australiaeast"
+}

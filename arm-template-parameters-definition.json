@@ -10,5 +10,12 @@
                 }
             }
         }
+    },
+    "Microsoft.DataFactory/factories": {
+        "properties": {
+            "globalParameters":
+            { "global_param1":"=:-p1"
+                }
+        }
     }
 }
