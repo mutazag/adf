@@ -14,8 +14,10 @@
     "Microsoft.DataFactory/factories": {
         "properties": {
             "globalParameters":
-            { "global_param1":"=:-p1"
+            { "global_param1":
+                {"value": "=:-p1"
                 }
         }
     }
+}
 }
