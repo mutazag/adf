@@ -44,7 +44,7 @@ steps:
 - task: Npm@1
   inputs:
     command: 'install'
-    workingDir: '$(Build.Repository.LocalPath)/'
+    workingDir: '$(Build.Repository.LocalPath)/build'
     verbose: true
   displayName: 'Install npm package'
 
@@ -56,7 +56,7 @@ steps:
 - task: Npm@1
   inputs:
     command: 'custom'
-    workingDir: '$(Build.Repository.LocalPath)' #replace with the package.json folder
+    workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
     customCommand: 'run build validate $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils"'
   displayName: 'Validate'
 
@@ -70,7 +70,7 @@ steps:
 - task: Npm@1
   inputs:
     command: 'custom'
-    workingDir: '$(Build.Repository.LocalPath)' #replace with the package.json folder
+    workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
     customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils" "ArmTemplate"'
   displayName: 'Export and Generate ARM template'
 
@@ -84,14 +84,14 @@ steps:
   displayName: 'ls ArmTemplate'
 
 - script:
-    cat ArmTemplate/ARMTemplateForFactory.json
-  displayName: 'content of ArmTemplate/ARMTemplateForFactory.json'
+    cat build/ArmTemplate/ARMTemplateForFactory.json
+  displayName: 'content of build/ArmTemplate/ARMTemplateForFactory.json'
 
 # Publish the artifact to be used as a source for a release pipeline.
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(Build.Repository.LocalPath)/ArmTemplate' #replace with the package.json folder
+    targetPath: '$(Build.Repository.LocalPath)/build/ArmTemplate' #replace with the package.json folder
     artifact: 'ArmTemplates'
     publishLocation: 'pipeline'
 
