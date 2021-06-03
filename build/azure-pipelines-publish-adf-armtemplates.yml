@@ -9,32 +9,12 @@ trigger:
       - master
 pr: none
 
-
 pool:
   vmImage: ubuntu-latest
 
 steps:
 - script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
-- script: |
-    ls trigger
-    cat trigger/OnceAWeekTrigger.json
-    echo See https://aka.ms/yaml
-  displayName: 'trigger content'
-
-- script: |
-    ls
-    echo $(Build.Repository.LocalPath)
-    echo 'run build validate . /subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils'
-    pwd
-    ls $(Build.Repository.LocalPath)
-  displayName: 'display cmd line outputs'
+  displayName: 'Hello, world!'
 
 - task: NodeTool@0
   inputs:
@@ -63,21 +43,12 @@ steps:
 # Validate and then generate the ARM template into the destination folder, which is the same as selecting "Publish" from the UX.
 # The ARM template generated isn't published to the live version of the factory. Deployment should be done by using a CI/CD pipeline.
 
-- script:
-    ls
-  displayName: 'ls after validate'
-
 - task: Npm@1
   inputs:
     command: 'custom'
     workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
     customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils" "ArmTemplate"'
   displayName: 'Export and Generate ARM template'
-
-- script:
-    ls
-  displayName: 'ls after export'
-
 
 - script:
     ls build/ArmTemplate
