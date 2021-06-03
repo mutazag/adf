@@ -58,6 +58,10 @@ steps:
     cat build/ArmTemplate/ARMTemplateForFactory.json
   displayName: 'content of build/ArmTemplate/ARMTemplateForFactory.json'
 
+- script:
+    cat build/ArmTemplate/ARMTemplateParametersForFactory.json
+  displayName: 'content of build/ArmTemplate/ARMTemplateParametersForFactory.json'
+
 # Publish the artifact to be used as a source for a release pipeline.
 
 - task: PublishPipelineArtifact@1
