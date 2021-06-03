@@ -4,7 +4,7 @@
         "properties": {
             "typeProperties": {
                 "recurrence": {
-                      "schedule": {
+                    "schedule": {
                         "weekDays": "=:-weekDays:array"
                     }
                 }
@@ -13,11 +13,24 @@
     },
     "Microsoft.DataFactory/factories": {
         "properties": {
-            "globalParameters":
-            { "global_param1":
-                {"value": "=:-p1"
+            "globalParameters": {
+                "global_param1": {
+                    "value": "=:-p1"
                 }
+            }
+        }
+    },
+    "Microsoft.DataFactory/factories/linkedServices": {
+        "*": {
+            "properties": {
+                "typeProperties": {
+                    "*": "=",
+                    "accountName": "=",
+                    "username": "=",
+                    "connectionString": "|:-connectionString:secureString",
+                    "secretAccessKey": "|"
+                }
+            }
         }
     }
-}
 }
