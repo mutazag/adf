@@ -1,0 +1,512 @@
+{
+	"name": "powerbi",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get KV Secret",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set KV Url from Template",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'test'\n)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Set KV Secret",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get KV Secret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "kvtest",
+					"value": {
+						"value": "@activity('Get KV Secret').output.value",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set KV Url from Template",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "kvurl",
+					"value": {
+						"value": "@replace(variables('kvurl_template'),\n'<kvservice>', \npipeline().globalParameters.kv)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "AADToken",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set tenanid",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set clientid",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set clientsecret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@replace(\n'https://login.microsoftonline.com/<tenantid>/oauth2/token',\n'<tenantid>',\nvariables('tenantid_kv'))",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"body": {
+						"value": "@replace(\nreplace('grant_type=client_credentials&scope=https://api.powerbi.com&resource=https://analysis.windows.net/powerbi/api&client_id=<client_id>&client_secret=<client_secret>',\n'<client_id>', variables('clientid_kv')),\n'<client_secret>', variables('clientsecret_kv'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get tenantid",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set KV Url from Template",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'tenantid'\n)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Set tenanid",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get tenantid",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "tenantid_kv",
+					"value": {
+						"value": "@activity('Get tenantid').output.value",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get clientid",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set KV Url from Template",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'clientid'\n)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Set clientid",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get clientid",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "clientid_kv",
+					"value": {
+						"value": "@activity('Get clientid').output.value",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get clientsecret",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set KV Url from Template",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'clientsecret'\n)",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Set clientsecret",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get clientsecret",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "clientsecret_kv",
+					"value": {
+						"value": "@activity('Get clientsecret').output.value",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set bearer_token",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "AADToken",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "bearer_token",
+					"value": {
+						"value": "@concat(string(activity('AADToken').output.token_type),' ',string(activity('AADToken').output.access_token))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Refreshes_Url",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "url_refreshes",
+					"value": {
+						"value": "@replace(\nreplace(variables('url_refreshes_template'), '{groupId}', pipeline().parameters.groupid),\n'{datasetId}', pipeline().parameters.datasetid)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "RefreshHistoryBefore",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Refreshes_Url",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set bearer_token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@variables('url_refreshes')",
+						"type": "Expression"
+					},
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "@variables('bearer_token')",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "RefreshDataset",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "RefreshHistoryBefore",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@variables('url_refreshes')",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Authorization": {
+							"value": "@variables('bearer_token')",
+							"type": "Expression"
+						}
+					},
+					"body": {
+						"notifyOption": "NoNotification"
+					}
+				}
+			},
+			{
+				"name": "UntilRefreshComplete",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "RefreshDataset",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(variables('refresh_status'), 'Unknown'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Wait",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						},
+						{
+							"name": "RefreshHistory_top1",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Wait",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "@concat(variables('url_refreshes'), '?$top=1')",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Authorization": {
+										"value": "@variables('bearer_token')",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "UpdateRefreshStatus",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "RefreshHistory_top1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "refresh_status",
+								"value": {
+									"value": "@activity('RefreshHistory_top1').output.value[0].status",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "7.00:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"groupid": {
+				"type": "string",
+				"defaultValue": "f86e35a2-fa81-48a8-bec8-8bc43275a5d1"
+			},
+			"datasetid": {
+				"type": "string",
+				"defaultValue": "8575efad-14d5-47bc-a71e-24322cbf1fe3"
+			}
+		},
+		"variables": {
+			"kvtest": {
+				"type": "String"
+			},
+			"kvurl_template": {
+				"type": "String",
+				"defaultValue": "https://<kvservice>.vault.azure.net/secrets/<kvsecret>?api-version=7.0"
+			},
+			"kvurl": {
+				"type": "String"
+			},
+			"tenantid_kv": {
+				"type": "String"
+			},
+			"clientid_kv": {
+				"type": "String"
+			},
+			"clientsecret_kv": {
+				"type": "String"
+			},
+			"bearer_token": {
+				"type": "String"
+			},
+			"url_refreshes_template": {
+				"type": "String",
+				"defaultValue": "https://api.powerbi.com/v1.0/myorg/groups/{groupId}/datasets/{datasetId}/refreshes"
+			},
+			"url_refreshes": {
+				"type": "String"
+			},
+			"refresh_status": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "powerbi"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-03-30T05:56:10Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
