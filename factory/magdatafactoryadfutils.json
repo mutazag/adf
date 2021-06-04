@@ -17,6 +17,10 @@
 			"kv": {
 				"type": "string",
 				"value": "datafactorydev"
+			},
+			"powerbi_groupid": {
+				"type": "string",
+				"value": "f86e35a2-fa81-48a8-bec8-8bc43275a5d1"
 			}
 		}
 	},
