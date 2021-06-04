@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "demo_pipeline",
 	"properties": {
 		"activities": [
 			{
@@ -116,6 +116,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
