@@ -5,10 +5,16 @@
 		"factoryName": {
 			"value": "magdatafactoryadfutils"
 		},
+		"storagegen2_properties_typeProperties_url": {
+			"value": "https://storagedatafactorydev01.dfs.core.windows.net"
+		},
 		"OnceAWeekTrigger_weekDays": {
 			"value": [
 				"Sunday"
 			]
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://datafactorydevkv.vault.azure.net/"
 		},
 		"dataFactory_p1": {
 			"value": "v2"
