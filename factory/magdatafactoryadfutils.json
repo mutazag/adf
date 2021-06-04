@@ -13,6 +13,10 @@
 			"and_another_one": {
 				"type": "string",
 				"value": "test12"
+			},
+			"kv": {
+				"type": "string",
+				"value": "datafactorydev"
 			}
 		}
 	},
