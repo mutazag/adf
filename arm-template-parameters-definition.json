@@ -17,5 +17,16 @@
                 }
             }
         }
+    },
+    "Microsoft.DataFactory/factories/triggers": {
+        "properties": {
+            "typeProperties": {
+                "recurrence": {
+                    "schedule": {
+                        "weekDays": "=:-weekDays:array"
+                    }
+                }
+            }
+        }
     }
 }
