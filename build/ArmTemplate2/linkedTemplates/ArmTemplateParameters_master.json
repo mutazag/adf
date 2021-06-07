@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "magdatafactoryadfutils"
+        },
+        "storagegen2_properties_typeProperties_url": {
+            "value": "https://storagedatafactorydev01.dfs.core.windows.net"
+        },
+        "dataFactory_properties_globalParameters_global_param1_value": {
+            "value": "v2"
+        },
+        "dataFactory_properties_globalParameters_another_param_value": {
+            "value": "test"
+        },
+        "dataFactory_properties_globalParameters_and_another_one_value": {
+            "value": "test12"
+        },
+        "containerUri": {
+            "value": ""
+        },
+        "containerSasToken": {
+            "value": ""
+        }
+    }
+}

@@ -1,23 +1,21 @@
 {
 
-    "Microsoft.DataFactory/factories/triggers": {
+    "Microsoft.DataFactory/factories": {
         "properties": {
-            "typeProperties": {
-                "recurrence": {
-                      "schedule": {
-                        "weekDays": "=:-weekDays:array"
-                    }
+            "globalParameters": {
+                "*": {
+                    "value": "="
                 }
             }
         }
     },
-    "Microsoft.DataFactory/factories": {
-        "properties": {
-            "globalParameters":
-            { "global_param1":
-                {"value": "=:-p1"
+    "Microsoft.DataFactory/factories/linkedServices": {
+        "*": {
+            "properties": {
+                "typeProperties": {
+                    "*": "="
                 }
+            }
         }
     }
-}
 }

@@ -13,6 +13,18 @@
 			"and_another_one": {
 				"type": "string",
 				"value": "test12"
+			},
+			"kv": {
+				"type": "string",
+				"value": "datafactorydevkv"
+			},
+			"powerbi_groupid": {
+				"type": "string",
+				"value": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+			},
+			"powerbi_datasetid": {
+				"type": "string",
+				"value": "634f5654-e781-4638-8299-499f63ed9f5f"
 			}
 		}
 	},

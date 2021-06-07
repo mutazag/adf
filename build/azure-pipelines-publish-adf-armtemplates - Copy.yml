@@ -1,0 +1,97 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+ branches:
+    include:
+      - master
+pr: none
+
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+
+- script: |
+    ls trigger
+    cat trigger/OnceAWeekTrigger.json
+    echo See https://aka.ms/yaml
+  displayName: 'trigger content'
+
+- script: |
+    ls
+    echo $(Build.Repository.LocalPath)
+    echo 'run build validate . /subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils'
+    pwd
+    ls $(Build.Repository.LocalPath)
+  displayName: 'display cmd line outputs'
+
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
+
+- task: Npm@1
+  inputs:
+    command: 'install'
+    workingDir: '$(Build.Repository.LocalPath)/'
+    verbose: true
+  displayName: 'Install npm package'
+
+
+
+# Validates all of the Data Factory resources in the repository. You'll get the same validation errors as when "Validate All" is selected.
+# Enter the appropriate subscription and name for the source factory.
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    workingDir: '$(Build.Repository.LocalPath)' #replace with the package.json folder
+    customCommand: 'run build validate $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils"'
+  displayName: 'Validate'
+
+# Validate and then generate the ARM template into the destination folder, which is the same as selecting "Publish" from the UX.
+# The ARM template generated isn't published to the live version of the factory. Deployment should be done by using a CI/CD pipeline.
+
+- script:
+    ls
+  displayName: 'ls after validate'
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    workingDir: '$(Build.Repository.LocalPath)' #replace with the package.json folder
+    customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils" "ArmTemplate"'
+  displayName: 'Export and Generate ARM template'
+
+- script:
+    ls
+  displayName: 'ls after export'
+
+
+- script:
+    ls ArmTemplate
+  displayName: 'ls ArmTemplate'
+
+- script:
+    cat ArmTemplate/ARMTemplateForFactory.json
+  displayName: 'content of ArmTemplate/ARMTemplateForFactory.json'
+
+# Publish the artifact to be used as a source for a release pipeline.
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.Repository.LocalPath)/ArmTemplate' #replace with the package.json folder
+    artifact: 'ArmTemplates'
+    publishLocation: 'pipeline'
+

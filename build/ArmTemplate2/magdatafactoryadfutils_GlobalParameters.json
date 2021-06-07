@@ -1,0 +1,14 @@
+{
+	"global_param1": {
+		"type": "string",
+		"value": "v2"
+	},
+	"another_param": {
+		"type": "string",
+		"value": "test"
+	},
+	"and_another_one": {
+		"type": "string",
+		"value": "test12"
+	}
+}

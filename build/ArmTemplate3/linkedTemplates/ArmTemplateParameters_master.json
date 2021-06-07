@@ -1,0 +1,26 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "magdatafactoryadfutils"
+        },
+        "storagegen2_properties_typeProperties_url": {
+            "value": "https://storagedatafactorydev01.dfs.core.windows.net"
+        },
+        "OnceAWeekTrigger_weekDays": {
+            "value": [
+                "Sunday"
+            ]
+        },
+        "dataFactory_p1": {
+            "value": "v2"
+        },
+        "containerUri": {
+            "value": ""
+        },
+        "containerSasToken": {
+            "value": ""
+        }
+    }
+}
