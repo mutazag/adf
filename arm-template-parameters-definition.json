@@ -1,21 +1,10 @@
 {
 
-    "Microsoft.DataFactory/factories/triggers": {
-        "properties": {
-            "typeProperties": {
-                "recurrence": {
-                    "schedule": {
-                        "weekDays": "=:-weekDays:array"
-                    }
-                }
-            }
-        }
-    },
     "Microsoft.DataFactory/factories": {
         "properties": {
             "globalParameters": {
-                "global_param1": {
-                    "value": "=:-p1"
+                "*": {
+                    "value": "="
                 }
             }
         }
@@ -24,11 +13,7 @@
         "*": {
             "properties": {
                 "typeProperties": {
-                    "*": "=",
-                    "accountName": "=",
-                    "username": "=",
-                    "connectionString": "|:-connectionString:secureString",
-                    "secretAccessKey": "|"
+                    "*": "="
                 }
             }
         }
