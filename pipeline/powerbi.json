@@ -3,57 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get KV Secret",
-				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "Set KV Url from Template",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": true,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"url": {
-						"value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'test'\n)",
-						"type": "Expression"
-					},
-					"method": "GET",
-					"authentication": {
-						"type": "MSI",
-						"resource": "https://vault.azure.net"
-					}
-				}
-			},
-			{
-				"name": "Set KV Secret",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Get KV Secret",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "kvtest",
-					"value": {
-						"value": "@activity('Get KV Secret').output.value",
-						"type": "Expression"
-					}
-				}
-			},
-			{
 				"name": "Set KV Url from Template",
 				"type": "SetVariable",
 				"dependsOn": [],
@@ -469,9 +418,6 @@
 			}
 		},
 		"variables": {
-			"kvtest": {
-				"type": "String"
-			},
 			"kvurl_template": {
 				"type": "String",
 				"defaultValue": "https://<kvservice>.vault.azure.net/secrets/<kvsecret>?api-version=7.0"
