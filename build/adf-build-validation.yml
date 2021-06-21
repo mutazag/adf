@@ -6,6 +6,7 @@ trigger:
  branches:
     include:
       - master
+      - dev
 pr: none
 
 
@@ -13,19 +14,13 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- script: echo "Build Validation Pipeline"
+  displayName: 'Start'
 
 - script: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
-
-- script: |
-    ls trigger
-    cat trigger/OnceAWeekTrigger.json
-    echo See https://aka.ms/yaml
-  displayName: 'trigger content'
 
 - script: |
     ls
@@ -65,32 +60,4 @@ steps:
 - script:
     ls
   displayName: 'ls after validate'
-
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    workingDir: '$(Build.Repository.LocalPath)' #replace with the package.json folder
-    customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils" "ArmTemplate"'
-  displayName: 'Export and Generate ARM template'
-
-- script:
-    ls
-  displayName: 'ls after export'
-
-
-- script:
-    ls ArmTemplate
-  displayName: 'ls ArmTemplate'
-
-- script:
-    cat ArmTemplate/ARMTemplateForFactory.json
-  displayName: 'content of ArmTemplate/ARMTemplateForFactory.json'
-
-# Publish the artifact to be used as a source for a release pipeline.
-
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '$(Build.Repository.LocalPath)/ArmTemplate' #replace with the package.json folder
-    artifact: 'ArmTemplates'
-    publishLocation: 'pipeline'
 
