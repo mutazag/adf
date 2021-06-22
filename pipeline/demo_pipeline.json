@@ -123,12 +123,8 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "csv_files",
-						"type": "DatasetReference",
-						"parameters": {
-							"folderpath": "dest/ds1",
-							"file_exension": "*.csv"
-						}
+						"referenceName": "metadata_ds",
+						"type": "DatasetReference"
 					},
 					"fieldList": [
 						"childItems"
