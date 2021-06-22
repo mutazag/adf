@@ -1,5 +1,13 @@
 {
 	"name": "magdatafactory-dev-mutaz",
+	"properties": {
+		"globalParameters": {
+			"kv": {
+				"type": "string",
+				"value": "magdatafactory-kv-dev"
+			}
+		}
+	},
 	"location": "australiaeast",
 	"identity": {
 		"type": "SystemAssigned",
