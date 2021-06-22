@@ -35,8 +35,26 @@
 						"type": "DelimitedTextSource",
 						"additionalColumns": [
 							{
-								"name": "filepath",
+								"name": "newfilepath",
 								"value": "$$FILEPATH"
+							},
+							{
+								"name": "pipelinename",
+								"value": {
+									"value": "@pipeline().Pipeline",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "runid",
+								"value": {
+									"value": "@pipeline().RunId",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "customcolumn",
+								"value": "customvalue"
 							}
 						],
 						"storeSettings": {
@@ -145,17 +163,37 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Metadata1').output",
+						"value": "@activity('Get Metadata1').output.childitems",
 						"type": "Expression"
 					},
 					"activities": [
 						{
 							"name": "Wait2",
 							"type": "Wait",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Append variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"userProperties": [],
 							"typeProperties": {
 								"waitTimeInSeconds": 2
+							}
+						},
+						{
+							"name": "Append variable1",
+							"type": "AppendVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "processedfiles",
+								"value": {
+									"value": "@item().name",
+									"type": "Expression"
+								}
 							}
 						}
 					]
@@ -166,6 +204,11 @@
 			"nameprefix": {
 				"type": "string",
 				"defaultValue": "test_pipeline"
+			}
+		},
+		"variables": {
+			"processedfiles": {
+				"type": "Array"
 			}
 		},
 		"annotations": []
