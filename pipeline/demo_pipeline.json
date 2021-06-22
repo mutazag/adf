@@ -76,7 +76,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ""
 						}
 					},
 					"enableStaging": false,
@@ -97,14 +97,8 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "csv_dataset_copy1",
-						"type": "DatasetReference",
-						"parameters": {
-							"filename": {
-								"value": "@concat(pipeline().parameters.nameprefix,'.csv')",
-								"type": "Expression"
-							}
-						}
+						"referenceName": "csv_dataset_copy22",
+						"type": "DatasetReference"
 					}
 				]
 			},
