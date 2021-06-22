@@ -93,7 +93,14 @@
 			{
 				"name": "Get Metadata1",
 				"type": "GetMetadata",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -107,7 +114,7 @@
 						"referenceName": "csv_files",
 						"type": "DatasetReference",
 						"parameters": {
-							"folderpath": "dest/so1",
+							"folderpath": "dest/ds1",
 							"file_exension": "*.csv"
 						}
 					},
