@@ -76,7 +76,7 @@
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": "*.csv"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
@@ -192,6 +192,26 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "flattenprocessedfiles",
+					"value": {
+						"value": "@concat(variables('processedfiles'))",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -203,6 +223,9 @@
 		"variables": {
 			"processedfiles": {
 				"type": "Array"
+			},
+			"flattenprocessedfiles": {
+				"type": "String"
 			}
 		},
 		"annotations": []
