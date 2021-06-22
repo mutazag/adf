@@ -11,7 +11,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": "ds1",
-				"fileSystem": "source"
+				"fileSystem": "dest"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
