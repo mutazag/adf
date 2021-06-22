@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "magdatafactory-dev-mutaz"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://magdatafactory-kv-dev.vault.azure.net/"
+		},
+		"storage_withkey_properties_typeProperties_url": {
+			"value": "https://magdatafactorystordev.dfs.core.windows.net/"
+		},
+		"storage_withkey_properties_typeProperties_accountKey": {
+			"value": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "storagekey"
+			}
+		},
+		"storagegen2_properties_typeProperties_url": {
+			"value": "https://magdatafactorystordev.dfs.core.windows.net"
+		},
+		"OnceAWeekTrigger_weekDays": {
+			"value": [
+				"Sunday"
+			]
+		},
+		"dataFactory_properties_globalParameters_kv_value": {
+			"value": "magdatafactory-kv-dev"
+		}
+	}
+}

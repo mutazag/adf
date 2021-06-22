@@ -1,0 +1,93 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "magdatafactory-dev-mutaz"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://magdatafactory-kv-dev.vault.azure.net/"
+		},
+		"storage_withkey_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://magdatafactorystordev.dfs.core.windows.net/"
+		},
+		"storage_withkey_properties_typeProperties_accountKey": {
+			"type": "object",
+			"defaultValue": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "storagekey"
+			}
+		},
+		"storagegen2_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://magdatafactorystordev.dfs.core.windows.net"
+		},
+		"OnceAWeekTrigger_weekDays": {
+			"type": "array",
+			"defaultValue": [
+				"Sunday"
+			]
+		},
+		"dataFactory_properties_globalParameters_kv_value": {
+			"type": "string",
+			"defaultValue": "magdatafactory-kv-dev"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "magdatafactory-dev-mutaz_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"dataFactory_properties_globalParameters_kv_value": {
+						"value": "[parameters('dataFactory_properties_globalParameters_kv_value')]"
+					},
+					"AzureKeyVault1_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
+					},
+					"storagegen2_properties_typeProperties_url": {
+						"value": "[parameters('storagegen2_properties_typeProperties_url')]"
+					},
+					"storage_withkey_properties_typeProperties_url": {
+						"value": "[parameters('storage_withkey_properties_typeProperties_url')]"
+					},
+					"storage_withkey_properties_typeProperties_accountKey": {
+						"value": "[parameters('storage_withkey_properties_typeProperties_accountKey')]"
+					},
+					"OnceAWeekTrigger_weekDays": {
+						"value": "[parameters('OnceAWeekTrigger_weekDays')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
