@@ -1,0 +1,9 @@
+{
+	"name": "magdatafactory-dev-mutaz",
+	"location": "australiaeast",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "1a69cf6d-4a95-4c76-a796-a9556e9f42ac",
+		"tenantId": "d88b8604-3b3f-4d58-820c-3e274f9e1017"
+	}
+}
