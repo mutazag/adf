@@ -17,6 +17,10 @@
 			"and_another_one": {
 				"type": "string",
 				"value": "v1"
+			},
+			"powerbi_groupid": {
+				"type": "string",
+				"value": "1"
 			}
 		}
 	},
