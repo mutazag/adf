@@ -21,6 +21,10 @@
 			"powerbi_groupid": {
 				"type": "string",
 				"value": "1"
+			},
+			"powerbi_datasetid": {
+				"type": "string",
+				"value": "v"
 			}
 		}
 	},
