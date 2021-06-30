@@ -39,6 +39,26 @@
 		"dataFactory_properties_globalParameters_kv_value": {
 			"type": "string",
 			"defaultValue": "magdatafactory-kv-dev"
+		},
+		"dataFactory_properties_globalParameters_global_param1_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_another_param_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_and_another_one_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_powerbi_groupid_value": {
+			"type": "string",
+			"defaultValue": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+		},
+		"dataFactory_properties_globalParameters_powerbi_datasetid_value": {
+			"type": "string",
+			"defaultValue": "634f5654-e781-4638-8299-499f63ed9f5f"
 		}
 	},
 	"variables": {
@@ -4456,6 +4476,53 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/metadata_ds')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "storagegen2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "ds1",
+						"fileSystem": "dest"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[variables('factoryId')]",
+				"[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureKeyVault1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -4539,53 +4606,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/metadata_ds')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "storagegen2",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": "ds1",
-						"fileSystem": "dest"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[variables('factoryId')]",
-				"[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
-			]
-		},
-		{
 			"name": "[parameters('factoryName')]",
 			"type": "Microsoft.DataFactory/factories",
 			"apiVersion": "2018-06-01",
@@ -4594,6 +4614,26 @@
 					"kv": {
 						"type": "string",
 						"value": "[parameters('dataFactory_properties_globalParameters_kv_value')]"
+					},
+					"global_param1": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_global_param1_value')]"
+					},
+					"another_param": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_another_param_value')]"
+					},
+					"and_another_one": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_and_another_one_value')]"
+					},
+					"powerbi_groupid": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_powerbi_groupid_value')]"
+					},
+					"powerbi_datasetid": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_powerbi_datasetid_value')]"
 					}
 				}
 			},

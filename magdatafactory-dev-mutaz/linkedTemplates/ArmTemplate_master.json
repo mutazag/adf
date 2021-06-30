@@ -40,6 +40,26 @@
 			"type": "string",
 			"defaultValue": "magdatafactory-kv-dev"
 		},
+		"dataFactory_properties_globalParameters_global_param1_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_another_param_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_and_another_one_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_powerbi_groupid_value": {
+			"type": "string",
+			"defaultValue": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+		},
+		"dataFactory_properties_globalParameters_powerbi_datasetid_value": {
+			"type": "string",
+			"defaultValue": "634f5654-e781-4638-8299-499f63ed9f5f"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -69,6 +89,21 @@
 					},
 					"dataFactory_properties_globalParameters_kv_value": {
 						"value": "[parameters('dataFactory_properties_globalParameters_kv_value')]"
+					},
+					"dataFactory_properties_globalParameters_global_param1_value": {
+						"value": "[parameters('dataFactory_properties_globalParameters_global_param1_value')]"
+					},
+					"dataFactory_properties_globalParameters_another_param_value": {
+						"value": "[parameters('dataFactory_properties_globalParameters_another_param_value')]"
+					},
+					"dataFactory_properties_globalParameters_and_another_one_value": {
+						"value": "[parameters('dataFactory_properties_globalParameters_and_another_one_value')]"
+					},
+					"dataFactory_properties_globalParameters_powerbi_groupid_value": {
+						"value": "[parameters('dataFactory_properties_globalParameters_powerbi_groupid_value')]"
+					},
+					"dataFactory_properties_globalParameters_powerbi_datasetid_value": {
+						"value": "[parameters('dataFactory_properties_globalParameters_powerbi_datasetid_value')]"
 					},
 					"AzureKeyVault1_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"

@@ -11,6 +11,26 @@
 			"type": "string",
 			"defaultValue": "magdatafactory-kv-dev"
 		},
+		"dataFactory_properties_globalParameters_global_param1_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_another_param_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_and_another_one_value": {
+			"type": "string",
+			"defaultValue": "v1"
+		},
+		"dataFactory_properties_globalParameters_powerbi_groupid_value": {
+			"type": "string",
+			"defaultValue": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+		},
+		"dataFactory_properties_globalParameters_powerbi_datasetid_value": {
+			"type": "string",
+			"defaultValue": "634f5654-e781-4638-8299-499f63ed9f5f"
+		},
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://magdatafactory-kv-dev.vault.azure.net/"
@@ -54,6 +74,26 @@
 					"kv": {
 						"type": "string",
 						"value": "[parameters('dataFactory_properties_globalParameters_kv_value')]"
+					},
+					"global_param1": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_global_param1_value')]"
+					},
+					"another_param": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_another_param_value')]"
+					},
+					"and_another_one": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_and_another_one_value')]"
+					},
+					"powerbi_groupid": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_powerbi_groupid_value')]"
+					},
+					"powerbi_datasetid": {
+						"type": "string",
+						"value": "[parameters('dataFactory_properties_globalParameters_powerbi_datasetid_value')]"
 					}
 				}
 			},
@@ -4254,22 +4294,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/storage_withkey')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('storage_withkey_properties_typeProperties_url')]",
-					"accountKey": "[parameters('storage_withkey_properties_typeProperties_accountKey')]"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/metadata_ds')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4313,6 +4337,22 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/storage_withkey')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('storage_withkey_properties_typeProperties_url')]",
+					"accountKey": "[parameters('storage_withkey_properties_typeProperties_accountKey')]"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault1')]"
 			]
 		},
 		{
