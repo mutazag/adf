@@ -13,6 +13,10 @@
 			"another_param": {
 				"type": "string",
 				"value": "v1"
+			},
+			"and_another_one": {
+				"type": "string",
+				"value": "v1"
 			}
 		}
 	},
