@@ -35,13 +35,31 @@
 						"type": "DelimitedTextSource",
 						"additionalColumns": [
 							{
-								"name": "filepath",
+								"name": "newfilepath",
 								"value": "$$FILEPATH"
+							},
+							{
+								"name": "pipelinename",
+								"value": {
+									"value": "@pipeline().Pipeline",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "runid",
+								"value": {
+									"value": "@pipeline().RunId",
+									"type": "Expression"
+								}
+							},
+							{
+								"name": "customcolumn",
+								"value": "customvalue"
 							}
 						],
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
-							"recursive": false,
+							"recursive": true,
 							"wildcardFileName": "*.csv",
 							"enablePartitionDiscovery": false
 						},
@@ -53,12 +71,12 @@
 						"type": "DelimitedTextSink",
 						"storeSettings": {
 							"type": "AzureBlobFSWriteSettings",
-							"copyBehavior": "MergeFiles"
+							"copyBehavior": "PreserveHierarchy"
 						},
 						"formatSettings": {
 							"type": "DelimitedTextWriteSettings",
 							"quoteAllText": true,
-							"fileExtension": ".txt"
+							"fileExtension": ".csv"
 						}
 					},
 					"enableStaging": false,
@@ -79,21 +97,22 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "csv_dataset_copy1",
-						"type": "DatasetReference",
-						"parameters": {
-							"filename": {
-								"value": "@concat(pipeline().parameters.nameprefix,'.csv')",
-								"type": "Expression"
-							}
-						}
+						"referenceName": "csv_dataset_copy22",
+						"type": "DatasetReference"
 					}
 				]
 			},
 			{
 				"name": "Get Metadata1",
 				"type": "GetMetadata",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -104,12 +123,8 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "csv_files",
-						"type": "DatasetReference",
-						"parameters": {
-							"folderpath": "dest/so1",
-							"file_exension": "*.csv"
-						}
+						"referenceName": "metadata_ds",
+						"type": "DatasetReference"
 					},
 					"fieldList": [
 						"childItems"
@@ -138,20 +153,60 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Metadata1').output",
+						"value": "@activity('Get Metadata1').output.childitems",
 						"type": "Expression"
 					},
 					"activities": [
 						{
 							"name": "Wait2",
 							"type": "Wait",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Append variable1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"userProperties": [],
 							"typeProperties": {
 								"waitTimeInSeconds": 2
 							}
+						},
+						{
+							"name": "Append variable1",
+							"type": "AppendVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "processedfiles",
+								"value": {
+									"value": "@item().name",
+									"type": "Expression"
+								}
+							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "flattenprocessedfiles",
+					"value": {
+						"value": "@concat(variables('processedfiles'))",
+						"type": "Expression"
+					}
 				}
 			}
 		],
@@ -159,6 +214,14 @@
 			"nameprefix": {
 				"type": "string",
 				"defaultValue": "test_pipeline"
+			}
+		},
+		"variables": {
+			"processedfiles": {
+				"type": "Array"
+			},
+			"flattenprocessedfiles": {
+				"type": "String"
 			}
 		},
 		"annotations": []

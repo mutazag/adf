@@ -1,5 +1,5 @@
 {
-	"name": "csv_dataset_copy22",
+	"name": "metadata_ds",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "storagegen2",
@@ -15,9 +15,27 @@
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
-			"firstRowAsHeader": true,
 			"quoteChar": "\""
 		},
-		"schema": []
+		"schema": [
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			},
+			{
+				"type": "String"
+			}
+		]
 	}
 }

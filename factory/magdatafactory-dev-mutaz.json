@@ -1,0 +1,37 @@
+{
+	"name": "magdatafactory-dev-mutaz",
+	"properties": {
+		"globalParameters": {
+			"kv": {
+				"type": "string",
+				"value": "magdatafactory-kv-dev"
+			},
+			"global_param1": {
+				"type": "string",
+				"value": "v1"
+			},
+			"another_param": {
+				"type": "string",
+				"value": "v1"
+			},
+			"and_another_one": {
+				"type": "string",
+				"value": "v1"
+			},
+			"powerbi_groupid": {
+				"type": "string",
+				"value": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+			},
+			"powerbi_datasetid": {
+				"type": "string",
+				"value": "634f5654-e781-4638-8299-499f63ed9f5f"
+			}
+		}
+	},
+	"location": "australiaeast",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "1a69cf6d-4a95-4c76-a796-a9556e9f42ac",
+		"tenantId": "d88b8604-3b3f-4d58-820c-3e274f9e1017"
+	}
+}

@@ -1,6 +1,7 @@
 {
 	"name": "powerbi",
 	"properties": {
+		"description": "admin@M365x868089.onmicrosoft.com",
 		"activities": [
 			{
 				"name": "Set KV Url from Template",
