@@ -47,8 +47,6 @@ stages:
         customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz" "ArmTemplate"'
       displayName: 'Export and Generate ARM template'
 
-  - job: check_content 
-    steps:
     - script:
         ls build/ArmTemplate
       displayName: 'ls build/ArmTemplate'
@@ -59,9 +57,6 @@ stages:
         cat build/ArmTemplate/ARMTemplateParametersForFactory.json
       displayName: 'content of build/ArmTemplate/ARMTemplateParametersForFactory.json'
 
-
-  - job: publish_artifact 
-    steps:
     # Publish the artifact to be used as a source for a release pipeline.
     - task: PublishPipelineArtifact@1
       inputs:
