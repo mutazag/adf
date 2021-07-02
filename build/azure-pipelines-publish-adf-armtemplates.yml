@@ -37,7 +37,7 @@ steps:
   inputs:
     command: 'custom'
     workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
-    customCommand: 'run build validate $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils"'
+    customCommand: 'run build validate $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz"'
   displayName: 'Validate'
 
 # Validate and then generate the ARM template into the destination folder, which is the same as selecting "Publish" from the UX.
@@ -47,7 +47,7 @@ steps:
   inputs:
     command: 'custom'
     workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
-    customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/d893bc92-5575-465c-9e0d-f7047584bec3/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactoryadfutils" "ArmTemplate"'
+    customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz" "ArmTemplate"'
   displayName: 'Export and Generate ARM template'
 
 - script:
