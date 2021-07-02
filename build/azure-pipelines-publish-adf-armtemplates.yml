@@ -47,30 +47,25 @@ stages:
         customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz" "ArmTemplate"'
       displayName: 'Export and Generate ARM template'
 
-
-- stage: post 
-  jobs: 
-    - job: check_content 
-      steps:
-      - script:
-          ls build/ArmTemplate
-        displayName: 'ls build/ArmTemplate'
-      - script:
-          cat build/ArmTemplate/ARMTemplateForFactory.json
-        displayName: 'content of build/ArmTemplate/ARMTemplateForFactory.json'
-      - script:
-          cat build/ArmTemplate/ARMTemplateParametersForFactory.json
-        displayName: 'content of build/ArmTemplate/ARMTemplateParametersForFactory.json'
+  - job: check_content 
+    steps:
+    - script:
+        ls build/ArmTemplate
+      displayName: 'ls build/ArmTemplate'
+    - script:
+        cat build/ArmTemplate/ARMTemplateForFactory.json
+      displayName: 'content of build/ArmTemplate/ARMTemplateForFactory.json'
+    - script:
+        cat build/ArmTemplate/ARMTemplateParametersForFactory.json
+      displayName: 'content of build/ArmTemplate/ARMTemplateParametersForFactory.json'
 
 
-- stage: finalise 
-  jobs: 
-    - job: publish_artifact 
-      steps:
-      # Publish the artifact to be used as a source for a release pipeline.
-      - task: PublishPipelineArtifact@1
-        inputs:
-          targetPath: '$(Build.Repository.LocalPath)/build/ArmTemplate' #replace with the package.json folder
-          artifact: 'ArmTemplates'
-          publishLocation: 'pipeline'
+  - job: publish_artifact 
+    steps:
+    # Publish the artifact to be used as a source for a release pipeline.
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.Repository.LocalPath)/build/ArmTemplate' #replace with the package.json folder
+        artifact: 'ArmTemplates'
+        publishLocation: 'pipeline'
 
