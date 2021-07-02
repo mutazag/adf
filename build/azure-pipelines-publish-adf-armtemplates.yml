@@ -30,33 +30,22 @@ stages:
         verbose: true
       displayName: 'Install npm package'
 
-
-- stage: validate 
-  jobs: 
-    - job: validating 
-      steps:
     # Validates all of the Data Factory resources in the repository. You'll get the same validation errors as when "Validate All" is selected.
     # Enter the appropriate subscription and name for the source factory.
-      - task: Npm@1
-        inputs:
-          command: 'custom'
-          workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
-          customCommand: 'run build validate $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz"'
-        displayName: 'Validate'
-
-
-- stage: export 
-  jobs: 
-    - job: exporting 
-      steps:
-# Validate and then generate the ARM template into the destination folder, which is the same as selecting "Publish" from the UX.
-# The ARM template generated isn't published to the live version of the factory. Deployment should be done by using a CI/CD pipeline.
-      - task: Npm@1
-        inputs:
-          command: 'custom'
-          workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
-          customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz" "ArmTemplate"'
-        displayName: 'Export and Generate ARM template'
+    - task: Npm@1
+      inputs:
+        command: 'custom'
+        workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
+        customCommand: 'run build validate $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz"'
+      displayName: 'Validate'
+    # Validate and then generate the ARM template into the destination folder, which is the same as selecting "Publish" from the UX.
+    # The ARM template generated isn't published to the live version of the factory. Deployment should be done by using a CI/CD pipeline.
+    - task: Npm@1
+      inputs:
+        command: 'custom'
+        workingDir: '$(Build.Repository.LocalPath)/build' #replace with the package.json folder
+        customCommand: 'run build export $(Build.Repository.LocalPath) "/subscriptions/5f097208-e515-43b6-9ac0-947a1842b3a7/resourceGroups/datafactorydev/providers/Microsoft.DataFactory/factories/magdatafactory-dev-mutaz" "ArmTemplate"'
+      displayName: 'Export and Generate ARM template'
 
 
 - stage: post 
