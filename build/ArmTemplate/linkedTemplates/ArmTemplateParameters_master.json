@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "magdatafactory-dev-mutaz"
+        },
+        "AzureKeyVault1_properties_typeProperties_baseUrl": {
+            "value": "https://magdatafactory-kv-dev.vault.azure.net/"
+        },
+        "storagegen2_properties_typeProperties_url": {
+            "value": "https://magdatafactorystordev.dfs.core.windows.net"
+        },
+        "storage_withkey_properties_typeProperties_url": {
+            "value": "https://magdatafactorystordev.dfs.core.windows.net/"
+        },
+        "storage_withkey_properties_typeProperties_accountKey": {
+            "value": {
+                "type": "AzureKeyVaultSecret",
+                "store": {
+                    "referenceName": "AzureKeyVault1",
+                    "type": "LinkedServiceReference"
+                },
+                "secretName": "storagekey"
+            }
+        },
+        "OnceAWeekTrigger_weekDays": {
+            "value": [
+                "Sunday"
+            ]
+        },
+        "dataFactory_properties_globalParameters_kv_value": {
+            "value": "magdatafactory-kv-dev"
+        },
+        "dataFactory_properties_globalParameters_global_param1_value": {
+            "value": "v1"
+        },
+        "dataFactory_properties_globalParameters_another_param_value": {
+            "value": "v1"
+        },
+        "dataFactory_properties_globalParameters_and_another_one_value": {
+            "value": "v1"
+        },
+        "dataFactory_properties_globalParameters_powerbi_groupid_value": {
+            "value": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+        },
+        "dataFactory_properties_globalParameters_powerbi_datasetid_value": {
+            "value": "634f5654-e781-4638-8299-499f63ed9f5f"
+        },
+        "containerUri": {
+            "value": ""
+        },
+        "containerSasToken": {
+            "value": ""
+        }
+    }
+}
