@@ -1,0 +1,4663 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "magdatafactory-dev-mutaz"
+        },
+        "dataFactory_properties_globalParameters_kv_value": {
+            "type": "string",
+            "defaultValue": "magdatafactory-kv-dev"
+        },
+        "dataFactory_properties_globalParameters_global_param1_value": {
+            "type": "string",
+            "defaultValue": "v1"
+        },
+        "dataFactory_properties_globalParameters_another_param_value": {
+            "type": "string",
+            "defaultValue": "v1"
+        },
+        "dataFactory_properties_globalParameters_and_another_one_value": {
+            "type": "string",
+            "defaultValue": "v1"
+        },
+        "dataFactory_properties_globalParameters_powerbi_groupid_value": {
+            "type": "string",
+            "defaultValue": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+        },
+        "dataFactory_properties_globalParameters_powerbi_datasetid_value": {
+            "type": "string",
+            "defaultValue": "634f5654-e781-4638-8299-499f63ed9f5f"
+        },
+        "AzureKeyVault1_properties_typeProperties_baseUrl": {
+            "type": "string",
+            "defaultValue": "https://magdatafactory-kv-dev.vault.azure.net/"
+        },
+        "storagegen2_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://magdatafactorystordev.dfs.core.windows.net"
+        },
+        "storage_withkey_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://magdatafactorystordev.dfs.core.windows.net/"
+        },
+        "storage_withkey_properties_typeProperties_accountKey": {
+            "type": "object",
+            "defaultValue": {
+                "type": "AzureKeyVaultSecret",
+                "store": {
+                    "referenceName": "AzureKeyVault1",
+                    "type": "LinkedServiceReference"
+                },
+                "secretName": "storagekey"
+            }
+        },
+        "OnceAWeekTrigger_weekDays": {
+            "type": "array",
+            "defaultValue": [
+                "Sunday"
+            ]
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[parameters('factoryName')]",
+            "type": "Microsoft.DataFactory/factories",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "globalParameters": {
+                    "kv": {
+                        "type": "string",
+                        "value": "[parameters('dataFactory_properties_globalParameters_kv_value')]"
+                    },
+                    "global_param1": {
+                        "type": "string",
+                        "value": "[parameters('dataFactory_properties_globalParameters_global_param1_value')]"
+                    },
+                    "another_param": {
+                        "type": "string",
+                        "value": "[parameters('dataFactory_properties_globalParameters_another_param_value')]"
+                    },
+                    "and_another_one": {
+                        "type": "string",
+                        "value": "[parameters('dataFactory_properties_globalParameters_and_another_one_value')]"
+                    },
+                    "powerbi_groupid": {
+                        "type": "string",
+                        "value": "[parameters('dataFactory_properties_globalParameters_powerbi_groupid_value')]"
+                    },
+                    "powerbi_datasetid": {
+                        "type": "string",
+                        "value": "[parameters('dataFactory_properties_globalParameters_powerbi_datasetid_value')]"
+                    }
+                }
+            },
+            "dependsOn": [],
+            "location": "australiaeast",
+            "identity": {
+                "type": "SystemAssigned"
+            }
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/powerbi')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "admin@M365x868089.onmicrosoft.com",
+                "activities": [
+                    {
+                        "name": "Set KV Url from Template",
+                        "type": "SetVariable",
+                        "dependsOn": [],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "variableName": "kvurl",
+                            "value": {
+                                "value": "@replace(variables('kvurl_template'),\n'<kvservice>', \npipeline().globalParameters.kv)",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    {
+                        "name": "AADToken",
+                        "type": "WebActivity",
+                        "dependsOn": [
+                            {
+                                "activity": "Set tenanid",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            },
+                            {
+                                "activity": "Set clientid",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            },
+                            {
+                                "activity": "Set clientsecret",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "url": {
+                                "value": "@replace(\n'https://login.microsoftonline.com/<tenantid>/oauth2/token',\n'<tenantid>',\nvariables('tenantid_kv'))",
+                                "type": "Expression"
+                            },
+                            "method": "POST",
+                            "headers": {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            "body": {
+                                "value": "@replace(\nreplace('grant_type=client_credentials&scope=https://api.powerbi.com&resource=https://analysis.windows.net/powerbi/api&client_id=<client_id>&client_secret=<client_secret>',\n'<client_id>', variables('clientid_kv')),\n'<client_secret>', variables('clientsecret_kv'))",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Get tenantid",
+                        "type": "WebActivity",
+                        "dependsOn": [
+                            {
+                                "activity": "Set KV Url from Template",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": true,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "url": {
+                                "value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'tenantid'\n)",
+                                "type": "Expression"
+                            },
+                            "method": "GET",
+                            "headers": {},
+                            "authentication": {
+                                "type": "MSI",
+                                "resource": "https://vault.azure.net"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Set tenanid",
+                        "type": "SetVariable",
+                        "dependsOn": [
+                            {
+                                "activity": "Get tenantid",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "variableName": "tenantid_kv",
+                            "value": {
+                                "value": "@activity('Get tenantid').output.value",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Get clientid",
+                        "type": "WebActivity",
+                        "dependsOn": [
+                            {
+                                "activity": "Set KV Url from Template",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": true,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "url": {
+                                "value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'clientid'\n)",
+                                "type": "Expression"
+                            },
+                            "method": "GET",
+                            "headers": {},
+                            "authentication": {
+                                "type": "MSI",
+                                "resource": "https://vault.azure.net"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Set clientid",
+                        "type": "SetVariable",
+                        "dependsOn": [
+                            {
+                                "activity": "Get clientid",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "variableName": "clientid_kv",
+                            "value": {
+                                "value": "@activity('Get clientid').output.value",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Get clientsecret",
+                        "type": "WebActivity",
+                        "dependsOn": [
+                            {
+                                "activity": "Set KV Url from Template",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": true,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "url": {
+                                "value": "@replace(\nvariables('kvurl'), \n'<kvsecret>',\n'clientsecret'\n)",
+                                "type": "Expression"
+                            },
+                            "method": "GET",
+                            "headers": {},
+                            "authentication": {
+                                "type": "MSI",
+                                "resource": "https://vault.azure.net"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Set clientsecret",
+                        "type": "SetVariable",
+                        "dependsOn": [
+                            {
+                                "activity": "Get clientsecret",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "variableName": "clientsecret_kv",
+                            "value": {
+                                "value": "@activity('Get clientsecret').output.value",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Set bearer_token",
+                        "type": "SetVariable",
+                        "dependsOn": [
+                            {
+                                "activity": "AADToken",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "variableName": "bearer_token",
+                            "value": {
+                                "value": "@concat(string(activity('AADToken').output.token_type),' ',string(activity('AADToken').output.access_token))",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    {
+                        "name": "Refreshes_Url",
+                        "type": "SetVariable",
+                        "dependsOn": [],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "variableName": "url_refreshes",
+                            "value": {
+                                "value": "@replace(\nreplace(variables('url_refreshes_template'), '{groupId}', pipeline().parameters.groupid),\n'{datasetId}', pipeline().parameters.datasetid)",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    {
+                        "name": "RefreshHistoryBefore",
+                        "type": "WebActivity",
+                        "dependsOn": [
+                            {
+                                "activity": "Refreshes_Url",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            },
+                            {
+                                "activity": "Set bearer_token",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "url": {
+                                "value": "@variables('url_refreshes')",
+                                "type": "Expression"
+                            },
+                            "method": "GET",
+                            "headers": {
+                                "Authorization": {
+                                    "value": "@variables('bearer_token')",
+                                    "type": "Expression"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "RefreshDataset",
+                        "type": "WebActivity",
+                        "dependsOn": [
+                            {
+                                "activity": "RefreshHistoryBefore",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "url": {
+                                "value": "@variables('url_refreshes')",
+                                "type": "Expression"
+                            },
+                            "method": "POST",
+                            "headers": {
+                                "Authorization": {
+                                    "value": "@variables('bearer_token')",
+                                    "type": "Expression"
+                                }
+                            },
+                            "body": {
+                                "notifyOption": "NoNotification"
+                            }
+                        }
+                    },
+                    {
+                        "name": "UntilRefreshComplete",
+                        "type": "Until",
+                        "dependsOn": [
+                            {
+                                "activity": "RefreshDataset",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "expression": {
+                                "value": "@not(equals(variables('refresh_status'), 'Unknown'))",
+                                "type": "Expression"
+                            },
+                            "activities": [
+                                {
+                                    "name": "Wait",
+                                    "type": "Wait",
+                                    "dependsOn": [],
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "waitTimeInSeconds": 1
+                                    }
+                                },
+                                {
+                                    "name": "RefreshHistory_top1",
+                                    "type": "WebActivity",
+                                    "dependsOn": [
+                                        {
+                                            "activity": "Wait",
+                                            "dependencyConditions": [
+                                                "Succeeded"
+                                            ]
+                                        }
+                                    ],
+                                    "policy": {
+                                        "timeout": "7.00:00:00",
+                                        "retry": 0,
+                                        "retryIntervalInSeconds": 30,
+                                        "secureOutput": false,
+                                        "secureInput": false
+                                    },
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "url": {
+                                            "value": "@concat(variables('url_refreshes'), '?$top=1')",
+                                            "type": "Expression"
+                                        },
+                                        "method": "GET",
+                                        "headers": {
+                                            "Authorization": {
+                                                "value": "@variables('bearer_token')",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "UpdateRefreshStatus",
+                                    "type": "SetVariable",
+                                    "dependsOn": [
+                                        {
+                                            "activity": "RefreshHistory_top1",
+                                            "dependencyConditions": [
+                                                "Succeeded"
+                                            ]
+                                        }
+                                    ],
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "variableName": "refresh_status",
+                                        "value": {
+                                            "value": "@activity('RefreshHistory_top1').output.value[0].status",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "timeout": "7.00:00:00"
+                        }
+                    }
+                ],
+                "parameters": {
+                    "groupid": {
+                        "type": "string",
+                        "defaultValue": "8b0fb1c2-33b1-40a1-bf23-337e0d632224"
+                    },
+                    "datasetid": {
+                        "type": "string",
+                        "defaultValue": "634f5654-e781-4638-8299-499f63ed9f5f"
+                    }
+                },
+                "variables": {
+                    "kvurl_template": {
+                        "type": "String",
+                        "defaultValue": "https://<kvservice>.vault.azure.net/secrets/<kvsecret>?api-version=7.0"
+                    },
+                    "kvurl": {
+                        "type": "String"
+                    },
+                    "tenantid_kv": {
+                        "type": "String"
+                    },
+                    "clientid_kv": {
+                        "type": "String"
+                    },
+                    "clientsecret_kv": {
+                        "type": "String"
+                    },
+                    "bearer_token": {
+                        "type": "String"
+                    },
+                    "url_refreshes_template": {
+                        "type": "String",
+                        "defaultValue": "https://api.powerbi.com/v1.0/myorg/groups/{groupId}/datasets/{datasetId}/refreshes"
+                    },
+                    "url_refreshes": {
+                        "type": "String"
+                    },
+                    "refresh_status": {
+                        "type": "String"
+                    }
+                },
+                "folder": {
+                    "name": "powerbi"
+                },
+                "annotations": [],
+                "lastPublishTime": "2021-03-30T05:56:10Z"
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/AzureKeyVault1')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureKeyVault",
+                "typeProperties": {
+                    "baseUrl": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/storagegen2')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureBlobFS",
+                "typeProperties": {
+                    "url": "[parameters('storagegen2_properties_typeProperties_url')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ssis-ir')]",
+            "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "type": "Managed",
+                "typeProperties": {
+                    "computeProperties": {
+                        "location": "Australia East",
+                        "nodeSize": "Standard_D2_v3",
+                        "numberOfNodes": 1,
+                        "maxParallelExecutionsPerNode": 2
+                    },
+                    "ssisProperties": {
+                        "catalogInfo": {
+                            "catalogServerEndpoint": "magdatafactoryssisdb.database.windows.net",
+                            "catalogAdminUserName": "Sqladmin",
+                            "catalogAdminPassword": {
+                                "type": "SecureString",
+                                "value": "**********"
+                            },
+                            "catalogPricingTier": "Basic"
+                        },
+                        "edition": "Standard",
+                        "licenseType": "LicenseIncluded"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/csv_dataset')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "storagegen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "folderPath": "ds1",
+                        "fileSystem": "source"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/csv_dataset_copy1')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "storagegen2",
+                    "type": "LinkedServiceReference"
+                },
+                "parameters": {
+                    "filename": {
+                        "type": "string",
+                        "defaultValue": "test_pipeline.csv"
+                    }
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "fileName": {
+                            "value": "@dataset().filename",
+                            "type": "Expression"
+                        },
+                        "folderPath": "ds1",
+                        "fileSystem": "dest"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "Id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "SinkCreatedOn",
+                        "type": "String"
+                    },
+                    {
+                        "name": "SinkModifiedOn",
+                        "type": "String"
+                    },
+                    {
+                        "name": "statecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "statuscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_preexistingconditions",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_freighttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_source",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_indigenousstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_lastassessmentstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_freighttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_medicarenumberstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "familystatuscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredcontactmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "haschildrencode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customertypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_addresstypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_classification",
+                        "type": "String"
+                    },
+                    {
+                        "name": "gendercode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "paymenttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_agegroup",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customersizecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_vaccinationstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "territorycode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_freighttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountrolecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "educationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_immunisationstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_gender",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationstate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_gendervcms",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_lastdose",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_orgchangestatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_contactmethod",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_addresstypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_role",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_addresstypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredappointmentdaycode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredappointmenttimecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprconsent",
+                        "type": "String"
+                    },
+                    {
+                        "name": "leadsourcecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_translatorservice",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_emailaddress1confirmed",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotphone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_surveyoptin",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_serologyreportattached",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotpostalmail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "creditonhold",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_confirmremovepassword",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_twofactorenabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilealert",
+                        "type": "String"
+                    },
+                    {
+                        "name": "isbackofficecustomer",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_covidimmunitystatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_interpratorrequired",
+                        "type": "String"
+                    },
+                    {
+                        "name": "isprivate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotbulkemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_locallogindisabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_isportalcontact",
+                        "type": "String"
+                    },
+                    {
+                        "name": "participatesinworkflow",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_isminorwithparentalconsent",
+                        "type": "String"
+                    },
+                    {
+                        "name": "marketingonly",
+                        "type": "String"
+                    },
+                    {
+                        "name": "merged",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_donotsendfollowupsurveys",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprischild",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_logonenabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_lockoutenabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "followemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_isminor",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotfax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_gdproptout",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianrepresentingforconsent",
+                        "type": "String"
+                    },
+                    {
+                        "name": "isautocreate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_translatorrequired",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_mobilephoneconfirmed",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotbulkpostalmail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_rememberme",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registered",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_donottrack",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_disablewebtracking",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_consenttodatacollection",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profileisanonymous",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotsendmm",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_interviewattested",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owninguser",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owninguser_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "masterid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "masterid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_occupationtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_occupationtype_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalparty",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalparty_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionbatch",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionbatch_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningteam",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningteam_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningbusinessunit",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningbusinessunit_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_bookableresourcecontactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_bookableresourcecontactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_emailid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_emailid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredequipmentid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredequipmentid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_countryofbirth",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_countryofbirth_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingpageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingpageid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "defaultpricelevelid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "defaultpricelevelid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slainvokedid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slainvokedid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_ethnicity",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_ethnicity_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredserviceid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredserviceid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slaid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slaid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_segmentmemberid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_segmentmemberid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_session",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_session_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_originatingeventid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_originatingeventid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_preferredlanguageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_preferredlanguageid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_consentchangesourceformid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_consentchangesourceformid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuserid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuserid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalparty",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalparty_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_customerjourneyid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_customerjourneyid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisation",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisation_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "transactioncurrencyid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "transactioncurrencyid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartnerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartnerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ownerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ownerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging30_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging60",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging60_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging90_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "annualincome",
+                        "type": "String"
+                    },
+                    {
+                        "name": "creditlimit_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "annualincome_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging90",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging30",
+                        "type": "String"
+                    },
+                    {
+                        "name": "creditlimit",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_latitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "managerphone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "stageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartneridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomeridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_medicarenumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "utcconversiontimezonecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_lastsuccessfullogin",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_securitystamp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "businesscard",
+                        "type": "String"
+                    },
+                    {
+                        "name": "spousesname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "transactioncurrencyidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_line3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "mastercontactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_stateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_emailidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_recentflushotbookingid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "firstname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "business2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "overriddencreatedon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "managername",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingpageidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "home2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_portaltermsagreementdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_organizationname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_passwordhash",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_bookingguid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employeridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_invitationsenton",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_createdbyusername",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_addressid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_country",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_username",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_generatedinvitationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_modifiedbyipaddress",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slaname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "subscriptionid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomimiddlename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_lastprescreeningresult",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_portalinvitationurl",
+                        "type": "String"
+                    },
+                    {
+                        "name": "assistantname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "onholdtime",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employeridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_line2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationaddressline1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationaddressline2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuseridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_postofficebox",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilealertdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_middleinitial",
+                        "type": "String"
+                    },
+                    {
+                        "name": "entityimageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "employeeid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_primarycontactname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_county",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationstateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_covidvaccinebookingid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalpartyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_insights_placeholder",
+                        "type": "String"
+                    },
+                    {
+                        "name": "childrensnames",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionbatchname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationlongitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationcountry",
+                        "type": "String"
+                    },
+                    {
+                        "name": "nickname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "salutation",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomifirstname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_line1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_stateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_postofficebox",
+                        "type": "String"
+                    },
+                    {
+                        "name": "processid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_longitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_yearlevel",
+                        "type": "String"
+                    },
+                    {
+                        "name": "fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "birthdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_dobstring",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_primarycontactname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "emailaddress3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "emailaddress2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "emailaddress1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_line1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_utcoffset",
+                        "type": "String"
+                    },
+                    {
+                        "name": "mastercontactidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "entityimage_url",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_dateofbirth",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_originatingeventidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_nextofkin",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_nameofinsurance",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_timezone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_bookableresourcecontactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "mobilephone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_county",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_customerjourneyidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "pager",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_nextofkinrelationship",
+                        "type": "String"
+                    },
+                    {
+                        "name": "lastonholdtime",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilelastactivity",
+                        "type": "String"
+                    },
+                    {
+                        "name": "versionnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_publicprofilecopy",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_line1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_nextofkincontactnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_utcoffset",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_addressid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisationname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owneridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationcounty",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformsubmissiondateprecise",
+                        "type": "String"
+                    },
+                    {
+                        "name": "defaultpricelevelidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_modifiedbyusername",
+                        "type": "String"
+                    },
+                    {
+                        "name": "lastusedincampaign",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_confirmdob",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomilastname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationlatitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "exchangerate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "numberofchildren",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_upszone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "jobtitle",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_ethnicityname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationcity",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_internalsessionid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_addressid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalpartyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "fullname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_otp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_medicalgroupnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_country",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_composite",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomeridtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "entityimage_timestamp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "teamsfollowed",
+                        "type": "String"
+                    },
+                    {
+                        "name": "timespentbymeonemailandmeetings",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_portalinvitationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_lockoutenddate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_latitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "assistantphone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisationyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_postalcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_longitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_preferredlanguagename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_stateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_country",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owneridtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "traversedpath",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_autonumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_addresssearch",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_line2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "importsequencenumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilealertinstructions",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_medicalid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredequipmentidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_preferredlanguageidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "description",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianorrepresentativename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "middlename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilemodifiedon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ftpsiteurl",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalpartyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuseridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "businesscardattributes",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_longitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_upszone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "externaluseridentifier",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slainvokedidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_recentbookingid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianorrepresentativemobilenumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_occupationtypename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationzip",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_latitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredserviceidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "callback",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartneridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "department",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_line2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "suffix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "anniversary",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_consentchangesourceformidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_upszone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_organisationid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalpartyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_line3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_line3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_preferredname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owneridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_createdbyipaddress",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_countryofbirthname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_postofficebox",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomifullname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_aadobjectid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "websiteurl",
+                        "type": "String"
+                    },
+                    {
+                        "name": "governmentid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_newpassword",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_composite",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_age",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationaddresssearch",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_segmentmemberidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_utcoffset",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianorrepresentativeemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "company",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_accessfailedcount",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_county",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "lastname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "timezoneruleversionnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomeridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_postalcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_composite",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_primarycontactname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_postalcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_firstdosevaccinename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_doyouhaveanunderlyingmedicalcondition",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationinvitation",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationinvitation_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationinvitationname",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/csv_dataset_copy22')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "storagegen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "folderPath": "ds1",
+                        "fileSystem": "dest"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/csv_dataset_copy23')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "storagegen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "folderPath": "ds1",
+                        "fileSystem": "source"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "Id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "SinkCreatedOn",
+                        "type": "String"
+                    },
+                    {
+                        "name": "SinkModifiedOn",
+                        "type": "String"
+                    },
+                    {
+                        "name": "statecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "statuscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_preexistingconditions",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_freighttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_source",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_indigenousstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_lastassessmentstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_freighttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_medicarenumberstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "familystatuscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredcontactmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "haschildrencode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customertypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_addresstypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_classification",
+                        "type": "String"
+                    },
+                    {
+                        "name": "gendercode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "paymenttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_agegroup",
+                        "type": "String"
+                    },
+                    {
+                        "name": "customersizecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_vaccinationstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "territorycode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_freighttermscode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountrolecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "educationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_shippingmethodcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_immunisationstatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_gender",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationstate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_gendervcms",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_lastdose",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_orgchangestatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_contactmethod",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_addresstypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_role",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_addresstypecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredappointmentdaycode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredappointmenttimecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprconsent",
+                        "type": "String"
+                    },
+                    {
+                        "name": "leadsourcecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_translatorservice",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_emailaddress1confirmed",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotphone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_surveyoptin",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_serologyreportattached",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotpostalmail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "creditonhold",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_confirmremovepassword",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_twofactorenabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilealert",
+                        "type": "String"
+                    },
+                    {
+                        "name": "isbackofficecustomer",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_covidimmunitystatus",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_interpratorrequired",
+                        "type": "String"
+                    },
+                    {
+                        "name": "isprivate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotbulkemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_locallogindisabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_isportalcontact",
+                        "type": "String"
+                    },
+                    {
+                        "name": "participatesinworkflow",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_isminorwithparentalconsent",
+                        "type": "String"
+                    },
+                    {
+                        "name": "marketingonly",
+                        "type": "String"
+                    },
+                    {
+                        "name": "merged",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_donotsendfollowupsurveys",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprischild",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_logonenabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_lockoutenabled",
+                        "type": "String"
+                    },
+                    {
+                        "name": "followemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_isminor",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotfax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_gdproptout",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianrepresentingforconsent",
+                        "type": "String"
+                    },
+                    {
+                        "name": "isautocreate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_translatorrequired",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_mobilephoneconfirmed",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotbulkpostalmail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_rememberme",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registered",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_donottrack",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_disablewebtracking",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_consenttodatacollection",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profileisanonymous",
+                        "type": "String"
+                    },
+                    {
+                        "name": "donotsendmm",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_interviewattested",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owninguser",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owninguser_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "masterid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "masterid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_occupationtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_occupationtype_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalparty",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalparty_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionbatch",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionbatch_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningteam",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningteam_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningbusinessunit",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owningbusinessunit_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_bookableresourcecontactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_bookableresourcecontactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_emailid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_emailid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredequipmentid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredequipmentid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_countryofbirth",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_countryofbirth_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingpageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingpageid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "defaultpricelevelid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "defaultpricelevelid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slainvokedid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slainvokedid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_ethnicity",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_ethnicity_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredserviceid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredserviceid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slaid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slaid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_segmentmemberid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_segmentmemberid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_session",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_session_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_originatingeventid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_originatingeventid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_preferredlanguageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_preferredlanguageid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdby",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdby_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_consentchangesourceformid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_consentchangesourceformid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuserid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuserid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalparty",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalparty_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_customerjourneyid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_customerjourneyid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisation",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisation_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "transactioncurrencyid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "transactioncurrencyid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartnerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartnerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ownerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ownerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomerid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomerid_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging30_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging60",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging60_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging90_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "annualincome",
+                        "type": "String"
+                    },
+                    {
+                        "name": "creditlimit_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "annualincome_base",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging90",
+                        "type": "String"
+                    },
+                    {
+                        "name": "aging30",
+                        "type": "String"
+                    },
+                    {
+                        "name": "creditlimit",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_latitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "managerphone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "stageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartneridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomeridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_medicarenumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "utcconversiontimezonecode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_lastsuccessfullogin",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_securitystamp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "businesscard",
+                        "type": "String"
+                    },
+                    {
+                        "name": "spousesname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "transactioncurrencyidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_line3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "mastercontactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_stateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_emailidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_recentflushotbookingid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_city",
+                        "type": "String"
+                    },
+                    {
+                        "name": "firstname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "business2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "overriddencreatedon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "managername",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingpageidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "home2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyn_portaltermsagreementdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_organizationname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_passwordhash",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_bookingguid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employeridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_invitationsenton",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_createdbyusername",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parent_contactidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_addressid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_country",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_username",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_generatedinvitationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_modifiedbyipaddress",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slaname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "subscriptionid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomimiddlename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_lastprescreeningresult",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_portalinvitationurl",
+                        "type": "String"
+                    },
+                    {
+                        "name": "assistantname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "onholdtime",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_employeridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_line2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationaddressline1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationaddressline2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuseridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_postofficebox",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilealertdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_middleinitial",
+                        "type": "String"
+                    },
+                    {
+                        "name": "entityimageid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "employeeid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_primarycontactname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_county",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationstateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_covidvaccinebookingid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalpartyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_insights_placeholder",
+                        "type": "String"
+                    },
+                    {
+                        "name": "childrensnames",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionbatchname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "accountidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationlongitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationcountry",
+                        "type": "String"
+                    },
+                    {
+                        "name": "nickname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "salutation",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomifirstname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_line1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_stateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_postofficebox",
+                        "type": "String"
+                    },
+                    {
+                        "name": "processid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_longitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_yearlevel",
+                        "type": "String"
+                    },
+                    {
+                        "name": "fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "birthdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdonbehalfbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_dobstring",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_telephone1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_primarycontactname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "emailaddress3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "emailaddress2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "emailaddress1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_line1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_utcoffset",
+                        "type": "String"
+                    },
+                    {
+                        "name": "mastercontactidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "entityimage_url",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_dateofbirth",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_originatingeventidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_nextofkin",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_nameofinsurance",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_timezone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "contactid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_bookableresourcecontactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "mobilephone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_county",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_customerjourneyidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "pager",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_nextofkinrelationship",
+                        "type": "String"
+                    },
+                    {
+                        "name": "lastonholdtime",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilelastactivity",
+                        "type": "String"
+                    },
+                    {
+                        "name": "versionnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_publicprofilecopy",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_line1",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_nextofkincontactnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_utcoffset",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_addressid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationdate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisationname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owneridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationcounty",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformsubmissiondateprecise",
+                        "type": "String"
+                    },
+                    {
+                        "name": "defaultpricelevelidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_modifiedbyusername",
+                        "type": "String"
+                    },
+                    {
+                        "name": "lastusedincampaign",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_confirmdob",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomilastname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationlatitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "originatingleadidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "exchangerate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "numberofchildren",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_upszone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_telephone2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "jobtitle",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_ethnicityname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationcity",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_internalsessionid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_addressid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalpartyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "fullname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_otp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_medicalgroupnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_country",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_composite",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomeridtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "entityimage_timestamp",
+                        "type": "String"
+                    },
+                    {
+                        "name": "teamsfollowed",
+                        "type": "String"
+                    },
+                    {
+                        "name": "timespentbymeonemailandmeetings",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_portalinvitationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_lockoutenddate",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_latitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "assistantphone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_associatedorganisationyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_postalcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_longitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_preferredlanguagename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_stateorprovince",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactidyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_country",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owneridtype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "traversedpath",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_autonumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_addresssearch",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_line2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "importsequencenumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilealertinstructions",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_medicalid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredequipmentidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_preferredlanguageidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "description",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianorrepresentativename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "middlename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_profilemodifiedon",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ftpsiteurl",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyexternalpartyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredsystemuseridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "businesscardattributes",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_longitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_upszone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "externaluseridentifier",
+                        "type": "String"
+                    },
+                    {
+                        "name": "slainvokedidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "hmn_recentbookingid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianorrepresentativemobilenumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_occupationtypename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationzip",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_latitude",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "preferredserviceidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "modifiedonbehalfbyname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "callback",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msa_managingpartneridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "department",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_line2",
+                        "type": "String"
+                    },
+                    {
+                        "name": "suffix",
+                        "type": "String"
+                    },
+                    {
+                        "name": "anniversary",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_consentchangesourceformidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_fax",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_upszone",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_organisationid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyexternalpartyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msgdpr_gdprparentidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_line3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_line3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_preferredname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "createdbyyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "owneridname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_createdbyipaddress",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_countryofbirthname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_postofficebox",
+                        "type": "String"
+                    },
+                    {
+                        "name": "yomifullname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_aadobjectid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "websiteurl",
+                        "type": "String"
+                    },
+                    {
+                        "name": "governmentid",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msevtmgt_contactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcontactidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_newpassword",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_composite",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_age",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_organizationaddresssearch",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_segmentmemberidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_utcoffset",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_guardianorrepresentativeemail",
+                        "type": "String"
+                    },
+                    {
+                        "name": "company",
+                        "type": "String"
+                    },
+                    {
+                        "name": "adx_identity_accessfailedcount",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_county",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_telephone3",
+                        "type": "String"
+                    },
+                    {
+                        "name": "lastname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "msdyncrm_marketingformidname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "timezoneruleversionnumber",
+                        "type": "String"
+                    },
+                    {
+                        "name": "parentcustomeridyominame",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_sessionname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address1_postalcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_composite",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address3_primarycontactname",
+                        "type": "String"
+                    },
+                    {
+                        "name": "address2_postalcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "vras_firstdosevaccinename",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_doyouhaveanunderlyingmedicalcondition",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationinvitation",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationinvitation_entitytype",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationcode",
+                        "type": "String"
+                    },
+                    {
+                        "name": "ms_registrationinvitationname",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/metadata_ds')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "storagegen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "folderPath": "ds1",
+                        "fileSystem": "dest"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "type": "String"
+                    },
+                    {
+                        "type": "String"
+                    },
+                    {
+                        "type": "String"
+                    },
+                    {
+                        "type": "String"
+                    },
+                    {
+                        "type": "String"
+                    },
+                    {
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/storage_withkey')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureBlobFS",
+                "typeProperties": {
+                    "url": "[parameters('storage_withkey_properties_typeProperties_url')]",
+                    "accountKey": "[parameters('storage_withkey_properties_typeProperties_accountKey')]"
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/AzureKeyVault1')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/demo_pipeline')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "Wait1",
+                        "type": "Wait",
+                        "dependsOn": [],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "waitTimeInSeconds": 1
+                        }
+                    },
+                    {
+                        "name": "Copy data1",
+                        "type": "Copy",
+                        "dependsOn": [
+                            {
+                                "activity": "Wait1",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "source": {
+                                "type": "DelimitedTextSource",
+                                "additionalColumns": [
+                                    {
+                                        "name": "newfilepath",
+                                        "value": "$$FILEPATH"
+                                    },
+                                    {
+                                        "name": "pipelinename",
+                                        "value": {
+                                            "value": "@pipeline().Pipeline",
+                                            "type": "Expression"
+                                        }
+                                    },
+                                    {
+                                        "name": "runid",
+                                        "value": {
+                                            "value": "@pipeline().RunId",
+                                            "type": "Expression"
+                                        }
+                                    },
+                                    {
+                                        "name": "customcolumn",
+                                        "value": "customvalue"
+                                    }
+                                ],
+                                "storeSettings": {
+                                    "type": "AzureBlobFSReadSettings",
+                                    "recursive": true,
+                                    "wildcardFileName": "*.csv",
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextReadSettings"
+                                }
+                            },
+                            "sink": {
+                                "type": "DelimitedTextSink",
+                                "storeSettings": {
+                                    "type": "AzureBlobFSWriteSettings",
+                                    "copyBehavior": "PreserveHierarchy"
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextWriteSettings",
+                                    "quoteAllText": true,
+                                    "fileExtension": ".csv"
+                                }
+                            },
+                            "enableStaging": false,
+                            "translator": {
+                                "type": "TabularTranslator",
+                                "typeConversion": true,
+                                "typeConversionSettings": {
+                                    "allowDataTruncation": true,
+                                    "treatBooleanAsNumber": false
+                                }
+                            }
+                        },
+                        "inputs": [
+                            {
+                                "referenceName": "csv_dataset",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "referenceName": "csv_dataset_copy22",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Get Metadata1",
+                        "type": "GetMetadata",
+                        "dependsOn": [
+                            {
+                                "activity": "Copy data1",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "7.00:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "dataset": {
+                                "referenceName": "metadata_ds",
+                                "type": "DatasetReference",
+                                "parameters": {}
+                            },
+                            "fieldList": [
+                                "childItems"
+                            ],
+                            "storeSettings": {
+                                "type": "AzureBlobFSReadSettings",
+                                "recursive": true,
+                                "enablePartitionDiscovery": false
+                            },
+                            "formatSettings": {
+                                "type": "DelimitedTextReadSettings"
+                            }
+                        }
+                    },
+                    {
+                        "name": "ForEach1",
+                        "type": "ForEach",
+                        "dependsOn": [
+                            {
+                                "activity": "Get Metadata1",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "items": {
+                                "value": "@activity('Get Metadata1').output.childitems",
+                                "type": "Expression"
+                            },
+                            "activities": [
+                                {
+                                    "name": "Wait2",
+                                    "type": "Wait",
+                                    "dependsOn": [
+                                        {
+                                            "activity": "Append variable1",
+                                            "dependencyConditions": [
+                                                "Succeeded"
+                                            ]
+                                        }
+                                    ],
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "waitTimeInSeconds": 2
+                                    }
+                                },
+                                {
+                                    "name": "Append variable1",
+                                    "type": "AppendVariable",
+                                    "dependsOn": [],
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "variableName": "processedfiles",
+                                        "value": {
+                                            "value": "@item().name",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "Set variable1",
+                        "type": "SetVariable",
+                        "dependsOn": [
+                            {
+                                "activity": "ForEach1",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "variableName": "flattenprocessedfiles",
+                            "value": {
+                                "value": "@concat(variables('processedfiles'))",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ],
+                "parameters": {
+                    "nameprefix": {
+                        "type": "string",
+                        "defaultValue": "test_pipeline"
+                    }
+                },
+                "variables": {
+                    "processedfiles": {
+                        "type": "Array"
+                    },
+                    "flattenprocessedfiles": {
+                        "type": "String"
+                    }
+                },
+                "annotations": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/csv_dataset')]",
+                "[concat(variables('factoryId'), '/datasets/csv_dataset_copy22')]",
+                "[concat(variables('factoryId'), '/datasets/metadata_ds')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/OnceAWeekTrigger')]",
+            "type": "Microsoft.DataFactory/factories/triggers",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "runtimeState": "Stopped",
+                "pipelines": [
+                    {
+                        "pipelineReference": {
+                            "referenceName": "demo_pipeline",
+                            "type": "PipelineReference"
+                        },
+                        "parameters": {
+                            "nameprefix": "pre1"
+                        }
+                    }
+                ],
+                "type": "ScheduleTrigger",
+                "typeProperties": {
+                    "recurrence": {
+                        "frequency": "Week",
+                        "interval": 1,
+                        "startTime": "2021-05-25T22:59:00Z",
+                        "timeZone": "UTC",
+                        "schedule": {
+                            "weekDays": "[parameters('OnceAWeekTrigger_weekDays')]"
+                        }
+                    }
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/pipelines/demo_pipeline')]"
+            ]
+        }
+    ]
+}
