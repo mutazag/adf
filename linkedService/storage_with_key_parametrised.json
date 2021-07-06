@@ -3,13 +3,14 @@
 	"properties": {
 		"parameters": {
 			"secretname": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "storagekey"
 			}
 		},
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://df",
+			"url": "https://magdatafactorystordev.dfs.core.windows.net/",
 			"accountKey": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
