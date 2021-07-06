@@ -12,13 +12,17 @@
 			},
 			"s2": {
 				"type": "string",
-				"defaultValue": "ket"
+				"defaultValue": "key1"
+			},
+			"storage": {
+				"type": "string",
+				"defaultValue": "magdatafactorystordev"
 			}
 		},
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://magdatafactorystordev.dfs.core.windows.net/",
+			"url": "https://@{linkedService().storage}.dfs.core.windows.net/",
 			"accountKey": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
@@ -26,7 +30,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"secretName": {
-					"value": "@{concat(linkedService().s1,replace(linkedService().s2,'ket','key'))}",
+					"value": "@{replace(linkedService().storage,'dev',linkedService().s2)}",
 					"type": "Expression"
 				}
 			}
