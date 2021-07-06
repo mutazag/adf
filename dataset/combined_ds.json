@@ -1,0 +1,48 @@
+{
+	"name": "combined_ds",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "storagegen2",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "ds1",
+				"fileSystem": "dest"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "id",
+				"type": "String"
+			},
+			{
+				"name": "value",
+				"type": "String"
+			},
+			{
+				"name": "newfilepath",
+				"type": "String"
+			},
+			{
+				"name": "pipelinename",
+				"type": "String"
+			},
+			{
+				"name": "runid",
+				"type": "String"
+			},
+			{
+				"name": "customcolumn",
+				"type": "String"
+			}
+		]
+	}
+}
