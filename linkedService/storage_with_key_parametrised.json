@@ -4,7 +4,15 @@
 		"parameters": {
 			"secretname": {
 				"type": "string",
-				"defaultValue": "storagekey"
+				"defaultValue": "storageket"
+			},
+			"s1": {
+				"type": "string",
+				"defaultValue": "storage"
+			},
+			"s2": {
+				"type": "string",
+				"defaultValue": "ket"
 			}
 		},
 		"annotations": [],
@@ -18,7 +26,7 @@
 					"type": "LinkedServiceReference"
 				},
 				"secretName": {
-					"value": "@linkedService().secretname",
+					"value": "@{concat(linkedService().s1,replace(linkedService().s2,'ket','key'))}",
 					"type": "Expression"
 				}
 			}
