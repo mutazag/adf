@@ -12,7 +12,7 @@
 				"type": "HttpServerLocation",
 				"relativeUrl": "~boos/var.select/diabetes.tab.txt"
 			},
-			"columnDelimiter": ",",
+			"columnDelimiter": "\t",
 			"escapeChar": "\\",
 			"firstRowAsHeader": true,
 			"quoteChar": "\""
