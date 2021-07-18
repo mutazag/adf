@@ -4,7 +4,7 @@
 		"annotations": [],
 		"type": "HttpServer",
 		"typeProperties": {
-			"url": "https://www4.stat.ncsu.edu/~boos/var.select/diabetes.tab.txt",
+			"url": "https://www4.stat.ncsu.edu",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
