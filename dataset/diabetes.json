@@ -1,0 +1,27 @@
+{
+	"name": "diabetes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "diabetes_http_dataset",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": "~boos/var.select/diabetes.tab.txt"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "AGE\tSEX\tBMI\tBP\tS1\tS2\tS3\tS4\tS5\tS6\tY",
+				"type": "String"
+			}
+		]
+	}
+}
