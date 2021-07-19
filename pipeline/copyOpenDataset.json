@@ -13,7 +13,16 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "~boos/var.select/diabetes.tab.txt"
+					},
+					{
+						"name": "Destination",
+						"value": "dest/ds1/@{'diabetest.csv'}"
+					}
+				],
 				"typeProperties": {
 					"source": {
 						"type": "DelimitedTextSource",
@@ -25,12 +34,148 @@
 							"type": "DelimitedTextReadSettings"
 						}
 					},
-					"enableStaging": false
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"enableSkipIncompatibleRow": true,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "AGE",
+									"type": "String"
+								},
+								"sink": {
+									"name": "AGE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "SEX",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SEX",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BMI",
+									"type": "String"
+								},
+								"sink": {
+									"name": "BMI",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "BP",
+									"type": "String"
+								},
+								"sink": {
+									"name": "BP",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "S1",
+									"type": "String"
+								},
+								"sink": {
+									"name": "S1",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "S2",
+									"type": "String"
+								},
+								"sink": {
+									"name": "S2",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "S3",
+									"type": "String"
+								},
+								"sink": {
+									"name": "S3",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "S4",
+									"type": "String"
+								},
+								"sink": {
+									"name": "S4",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "S5",
+									"type": "String"
+								},
+								"sink": {
+									"name": "S5",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "S6",
+									"type": "String"
+								},
+								"sink": {
+									"name": "S6",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Y",
+									"type": "String"
+								},
+								"sink": {
+									"name": "Y",
+									"type": "String"
+								}
+							}
+						]
+					}
 				},
 				"inputs": [
 					{
 						"referenceName": "diabetes",
 						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "csv_dataset_copy1",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "diabetest.csv"
+						}
 					}
 				]
 			}
