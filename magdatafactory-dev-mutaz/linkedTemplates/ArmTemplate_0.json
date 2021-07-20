@@ -134,6 +134,43 @@
 			}
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/error email')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "call web",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('https://www.bing.com/search?q=' ,pipeline().parameters.errordetails)",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {}
+						}
+					}
+				],
+				"parameters": {
+					"errordetails": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/powerbi')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -487,7 +524,7 @@
 									"dependsOn": [],
 									"userProperties": [],
 									"typeProperties": {
-										"waitTimeInSeconds": 1
+										"waitTimeInSeconds": 30
 									}
 								},
 								{
@@ -635,43 +672,6 @@
 				"typeProperties": {
 					"url": "[parameters('storagegen2_properties_typeProperties_url')]"
 				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/error email')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "call web",
-						"type": "WebActivity",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"url": {
-								"value": "@concat('https://www.bing.com/search?q=' ,pipeline().parameters.errordetails)",
-								"type": "Expression"
-							},
-							"method": "GET",
-							"headers": {}
-						}
-					}
-				],
-				"parameters": {
-					"errordetails": {
-						"type": "string"
-					}
-				},
-				"annotations": []
 			},
 			"dependsOn": []
 		},
@@ -5026,41 +5026,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/OnceAWeekTrigger')]",
-			"type": "Microsoft.DataFactory/factories/triggers",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Stopped",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "demo_pipeline",
-							"type": "PipelineReference"
-						},
-						"parameters": {
-							"nameprefix": "pre1"
-						}
-					}
-				],
-				"type": "ScheduleTrigger",
-				"typeProperties": {
-					"recurrence": {
-						"frequency": "Week",
-						"interval": 1,
-						"startTime": "2021-05-25T22:59:00Z",
-						"timeZone": "UTC",
-						"schedule": {
-							"weekDays": "[parameters('OnceAWeekTrigger_weekDays')]"
-						}
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/demo_pipeline')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/masterpipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -5077,7 +5042,10 @@
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {}
+							"parameters": {
+								"groupid": "8b0fb1c2-33b1-40a1-bf23-337e0d632224",
+								"datasetid": "634f5654-e781-4638-8299-499f63ed9f5f"
+							}
 						}
 					},
 					{
@@ -5167,6 +5135,41 @@
 				"[concat(variables('factoryId'), '/pipelines/copyOpenDataset')]",
 				"[concat(variables('factoryId'), '/pipelines/demo_pipeline')]",
 				"[concat(variables('factoryId'), '/pipelines/error email')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OnceAWeekTrigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "demo_pipeline",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"nameprefix": "pre1"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Week",
+						"interval": 1,
+						"startTime": "2021-05-25T22:59:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"weekDays": "[parameters('OnceAWeekTrigger_weekDays')]"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/demo_pipeline')]"
 			]
 		}
 	]
