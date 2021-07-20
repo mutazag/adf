@@ -86,7 +86,7 @@
 					"waitOnCompletion": true,
 					"parameters": {
 						"errordetails": {
-							"value": "@activity('Execute Pipeline1').output",
+							"value": "@activity('Execute demo').output",
 							"type": "Expression"
 						}
 					}
