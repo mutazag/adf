@@ -16,7 +16,7 @@
 				}
 			},
 			{
-				"name": "Execute Pipeline1",
+				"name": "Execute opendataset",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -34,6 +34,10 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"pipeline": {
+						"referenceName": "copyOpenDataset",
+						"type": "PipelineReference"
+					},
 					"waitOnCompletion": true
 				}
 			},
@@ -51,7 +55,7 @@
 				}
 			},
 			{
-				"name": "Execute Pipeline2",
+				"name": "Execute error",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -67,7 +71,7 @@
 						]
 					},
 					{
-						"activity": "Execute Pipeline1",
+						"activity": "Execute opendataset",
 						"dependencyConditions": [
 							"Failed"
 						]
