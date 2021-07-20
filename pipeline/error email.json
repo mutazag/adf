@@ -1,0 +1,33 @@
+{
+	"name": "error email",
+	"properties": {
+		"activities": [
+			{
+				"name": "call web",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://www.bing.com/search?q=' ,pipeline().parameters.errordetails)",
+						"type": "Expression"
+					},
+					"method": "GET"
+				}
+			}
+		],
+		"parameters": {
+			"errordetails": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
