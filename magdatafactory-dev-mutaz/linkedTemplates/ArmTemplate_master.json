@@ -11,6 +11,36 @@
 			"type": "string",
 			"defaultValue": "https://magdatafactory-kv-dev.vault.azure.net/"
 		},
+		"diabetes_http_dataset_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://www4.stat.ncsu.edu"
+		},
+		"diabetes_http_dataset_properties_typeProperties_enableServerCertificateValidation": {
+			"type": "bool",
+			"defaultValue": true
+		},
+		"diabetes_http_dataset_properties_typeProperties_authenticationType": {
+			"type": "string",
+			"defaultValue": "Anonymous"
+		},
+		"storage_with_key_parametrised_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://magdatafactorystordev.dfs.core.windows.net/"
+		},
+		"storage_with_key_parametrised_properties_typeProperties_accountKey": {
+			"type": "object",
+			"defaultValue": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@{replace(linkedService().storage,'dev',linkedService().s2)}",
+					"type": "Expression"
+				}
+			}
+		},
 		"storage_withkey_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://magdatafactorystordev.dfs.core.windows.net/"
@@ -40,7 +70,7 @@
 			"type": "string",
 			"defaultValue": "magdatafactory-kv-dev"
 		},
-		"dataFactory_properties_globalParameters_global_param1_value": {
+		"dataFactory_p1": {
 			"type": "string",
 			"defaultValue": "v1"
 		},
@@ -90,8 +120,8 @@
 					"dataFactory_properties_globalParameters_kv_value": {
 						"value": "[parameters('dataFactory_properties_globalParameters_kv_value')]"
 					},
-					"dataFactory_properties_globalParameters_global_param1_value": {
-						"value": "[parameters('dataFactory_properties_globalParameters_global_param1_value')]"
+					"dataFactory_p1": {
+						"value": "[parameters('dataFactory_p1')]"
 					},
 					"dataFactory_properties_globalParameters_another_param_value": {
 						"value": "[parameters('dataFactory_properties_globalParameters_another_param_value')]"
@@ -108,8 +138,23 @@
 					"AzureKeyVault1_properties_typeProperties_baseUrl": {
 						"value": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
 					},
+					"diabetes_http_dataset_properties_typeProperties_url": {
+						"value": "[parameters('diabetes_http_dataset_properties_typeProperties_url')]"
+					},
+					"diabetes_http_dataset_properties_typeProperties_enableServerCertificateValidation": {
+						"value": "[parameters('diabetes_http_dataset_properties_typeProperties_enableServerCertificateValidation')]"
+					},
+					"diabetes_http_dataset_properties_typeProperties_authenticationType": {
+						"value": "[parameters('diabetes_http_dataset_properties_typeProperties_authenticationType')]"
+					},
 					"storagegen2_properties_typeProperties_url": {
 						"value": "[parameters('storagegen2_properties_typeProperties_url')]"
+					},
+					"storage_with_key_parametrised_properties_typeProperties_url": {
+						"value": "[parameters('storage_with_key_parametrised_properties_typeProperties_url')]"
+					},
+					"storage_with_key_parametrised_properties_typeProperties_accountKey": {
+						"value": "[parameters('storage_with_key_parametrised_properties_typeProperties_accountKey')]"
 					},
 					"storage_withkey_properties_typeProperties_url": {
 						"value": "[parameters('storage_withkey_properties_typeProperties_url')]"

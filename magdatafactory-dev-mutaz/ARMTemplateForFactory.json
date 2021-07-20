@@ -11,6 +11,36 @@
 			"type": "string",
 			"defaultValue": "https://magdatafactory-kv-dev.vault.azure.net/"
 		},
+		"diabetes_http_dataset_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://www4.stat.ncsu.edu"
+		},
+		"diabetes_http_dataset_properties_typeProperties_enableServerCertificateValidation": {
+			"type": "bool",
+			"defaultValue": true
+		},
+		"diabetes_http_dataset_properties_typeProperties_authenticationType": {
+			"type": "string",
+			"defaultValue": "Anonymous"
+		},
+		"storage_with_key_parametrised_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://magdatafactorystordev.dfs.core.windows.net/"
+		},
+		"storage_with_key_parametrised_properties_typeProperties_accountKey": {
+			"type": "object",
+			"defaultValue": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@{replace(linkedService().storage,'dev',linkedService().s2)}",
+					"type": "Expression"
+				}
+			}
+		},
 		"storage_withkey_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://magdatafactorystordev.dfs.core.windows.net/"
@@ -40,7 +70,7 @@
 			"type": "string",
 			"defaultValue": "magdatafactory-kv-dev"
 		},
-		"dataFactory_properties_globalParameters_global_param1_value": {
+		"dataFactory_p1": {
 			"type": "string",
 			"defaultValue": "v1"
 		},
@@ -65,6 +95,199 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/copyOpenDataset')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy Diabetes",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Source",
+								"value": "~boos/var.select/diabetes.tab.txt"
+							},
+							{
+								"name": "Destination",
+								"value": "dest/ds1/@{'diabetest.csv'}"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"enableSkipIncompatibleRow": true,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "AGE",
+											"type": "String"
+										},
+										"sink": {
+											"name": "AGE",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "SEX",
+											"type": "String"
+										},
+										"sink": {
+											"name": "SEX",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "BMI",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BMI",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "BP",
+											"type": "String"
+										},
+										"sink": {
+											"name": "BP",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "S1",
+											"type": "String"
+										},
+										"sink": {
+											"name": "S1",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "S2",
+											"type": "String"
+										},
+										"sink": {
+											"name": "S2",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "S3",
+											"type": "String"
+										},
+										"sink": {
+											"name": "S3",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "S4",
+											"type": "String"
+										},
+										"sink": {
+											"name": "S4",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "S5",
+											"type": "String"
+										},
+										"sink": {
+											"name": "S5",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "S6",
+											"type": "String"
+										},
+										"sink": {
+											"name": "S6",
+											"type": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "Y",
+											"type": "String"
+										},
+										"sink": {
+											"name": "Y",
+											"type": "String"
+										}
+									}
+								]
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "diabetes",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "csv_dataset_copy1",
+								"type": "DatasetReference",
+								"parameters": {
+									"filename": "diabetest.csv"
+								}
+							}
+						]
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[variables('factoryId')]",
+				"[concat(variables('factoryId'), '/datasets/diabetes')]",
+				"[concat(variables('factoryId'), '/datasets/csv_dataset_copy1')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/demo_pipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -769,6 +992,99 @@
 			},
 			"dependsOn": [
 				"[variables('factoryId')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "storage_with_key_parametrised",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"secretname": "storagekey"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "second.csv",
+						"folderPath": "ds1",
+						"fileSystem": "source"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[variables('factoryId')]",
+				"[concat(variables('factoryId'), '/linkedServices/storage_with_key_parametrised')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/combined_ds')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "storagegen2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "ds1",
+						"fileSystem": "dest"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "String"
+					},
+					{
+						"name": "value",
+						"type": "String"
+					},
+					{
+						"name": "newfilepath",
+						"type": "String"
+					},
+					{
+						"name": "pipelinename",
+						"type": "String"
+					},
+					{
+						"name": "runid",
+						"type": "String"
+					},
+					{
+						"name": "customcolumn",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[variables('factoryId')]",
+				"[concat(variables('factoryId'), '/linkedServices/storagegen2')]"
 			]
 		},
 		{
@@ -4476,6 +4792,39 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/diabetes')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "diabetes_http_dataset",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": "~boos/var.select/diabetes.tab.txt"
+					},
+					"columnDelimiter": "\t",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "AGE\tSEX\tBMI\tBP\tS1\tS2\tS3\tS4\tS5\tS6\tY",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[variables('factoryId')]",
+				"[concat(variables('factoryId'), '/linkedServices/diabetes_http_dataset')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/metadata_ds')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -4535,6 +4884,58 @@
 			},
 			"dependsOn": [
 				"[variables('factoryId')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/diabetes_http_dataset')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('diabetes_http_dataset_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": "[parameters('diabetes_http_dataset_properties_typeProperties_enableServerCertificateValidation')]",
+					"authenticationType": "[parameters('diabetes_http_dataset_properties_typeProperties_authenticationType')]"
+				}
+			},
+			"dependsOn": [
+				"[variables('factoryId')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/storage_with_key_parametrised')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"secretname": {
+						"type": "string",
+						"defaultValue": "storageket"
+					},
+					"s1": {
+						"type": "string",
+						"defaultValue": "storage"
+					},
+					"s2": {
+						"type": "string",
+						"defaultValue": "key1"
+					},
+					"storage": {
+						"type": "string",
+						"defaultValue": "magdatafactorystordev"
+					}
+				},
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('storage_with_key_parametrised_properties_typeProperties_url')]",
+					"accountKey": "[parameters('storage_with_key_parametrised_properties_typeProperties_accountKey')]"
+				}
+			},
+			"dependsOn": [
+				"[variables('factoryId')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault1')]"
 			]
 		},
 		{
@@ -4606,6 +5007,155 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/masterpipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Execute powerbi",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "powerbi",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Execute opendataset",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Execute powerbi",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "Execute demo",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "copyOpenDataset",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Execute demo",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "demo_pipeline",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Execute error",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Execute powerbi",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Execute demo",
+								"dependencyConditions": [
+									"Failed"
+								]
+							},
+							{
+								"activity": "Execute opendataset",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "error email",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"errordetails": {
+									"value": "@activity('Execute demo').output",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": [
+				"[variables('factoryId')]",
+				"[concat(variables('factoryId'), '/pipelines/powerbi')]",
+				"[concat(variables('factoryId'), '/pipelines/copyOpenDataset')]",
+				"[concat(variables('factoryId'), '/pipelines/demo_pipeline')]",
+				"[concat(variables('factoryId'), '/pipelines/error email')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/error email')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "call web",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('https://www.bing.com/search?q=' ,pipeline().parameters.errordetails)",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {}
+						}
+					}
+				],
+				"parameters": {
+					"errordetails": {
+						"type": "string"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[variables('factoryId')]"
+			]
+		},
+		{
 			"name": "[parameters('factoryName')]",
 			"type": "Microsoft.DataFactory/factories",
 			"apiVersion": "2018-06-01",
@@ -4617,7 +5167,7 @@
 					},
 					"global_param1": {
 						"type": "string",
-						"value": "[parameters('dataFactory_properties_globalParameters_global_param1_value')]"
+						"value": "[parameters('dataFactory_p1')]"
 					},
 					"another_param": {
 						"type": "string",

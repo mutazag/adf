@@ -8,6 +8,31 @@
 		"AzureKeyVault1_properties_typeProperties_baseUrl": {
 			"value": "https://magdatafactory-kv-dev.vault.azure.net/"
 		},
+		"diabetes_http_dataset_properties_typeProperties_url": {
+			"value": "https://www4.stat.ncsu.edu"
+		},
+		"diabetes_http_dataset_properties_typeProperties_enableServerCertificateValidation": {
+			"value": true
+		},
+		"diabetes_http_dataset_properties_typeProperties_authenticationType": {
+			"value": "Anonymous"
+		},
+		"storage_with_key_parametrised_properties_typeProperties_url": {
+			"value": "https://magdatafactorystordev.dfs.core.windows.net/"
+		},
+		"storage_with_key_parametrised_properties_typeProperties_accountKey": {
+			"value": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@{replace(linkedService().storage,'dev',linkedService().s2)}",
+					"type": "Expression"
+				}
+			}
+		},
 		"storage_withkey_properties_typeProperties_url": {
 			"value": "https://magdatafactorystordev.dfs.core.windows.net/"
 		},
@@ -32,7 +57,7 @@
 		"dataFactory_properties_globalParameters_kv_value": {
 			"value": "magdatafactory-kv-dev"
 		},
-		"dataFactory_properties_globalParameters_global_param1_value": {
+		"dataFactory_p1": {
 			"value": "v1"
 		},
 		"dataFactory_properties_globalParameters_another_param_value": {
